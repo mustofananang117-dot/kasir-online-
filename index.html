@@ -29,27 +29,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 75px; -webkit-tap-highlight-color: transparent; }
 
-    /* LOGIN SCREEN */
-    #login-screen {
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: linear-gradient(135deg, #064e3b, var(--primary));
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-    .login-box {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      width: 100%;
-      max-width: 380px;
-      box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2);
-      text-align: center;
-    }
-
     header {
       background: linear-gradient(135deg, #065f46, var(--primary));
       color: white;
@@ -150,7 +129,6 @@
 
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
 
     /* PRODUK GRID (POS VIEW) */
     .grid-produk {
@@ -218,37 +196,10 @@
 </head>
 <body>
 
-  <!-- SCREEN LOGIN -->
-  <div id="login-screen">
-    <div class="login-box">
-      <h2 style="border:none; text-align:center; font-size:1.4rem; color:var(--primary-dark); margin-bottom:2px;">GyroPOS Pro</h2>
-      <p style="font-size:0.78rem; color:#64748b; margin-bottom:18px;">Sistem Kasir & Manajemen Toko Cloud</p>
-
-      <div class="form-group">
-        <label>Username</label>
-        <input type="text" id="login-user" placeholder="admin / kasir">
-      </div>
-      <div class="form-group">
-        <label>Password</label>
-        <input type="password" id="login-pass" placeholder="Password">
-      </div>
-
-      <button class="btn btn-primary" style="padding:10px; margin-top:10px; width:100%; font-size:0.95rem;" onclick="prosesLogin()">Masuk Sistem</button>
-      
-      <div style="margin-top:15px; font-size:0.75rem; color:#64748b; text-align:left; background:#f8fafc; padding:8px; border-radius:6px; border:1px solid #e2e8f0;">
-        <b>Akun Akses:</b><br>
-        • Admin: <code>admin</code> / <code>admin123</code><br>
-        • Kasir: <code>kasir</code> / <code>kasir123</code>
-      </div>
-    </div>
-  </div>
-
   <header class="no-print">
     <span>GyroPOS <small style="font-size:0.65rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:8px;">PRO</small></span>
     <div class="header-user-info">
       <span class="status-badge" id="cloud-status">☁️ Online</span>
-      <span id="user-display-name" style="font-weight:bold;">👤 Admin</span>
-      <button class="btn btn-danger" style="padding:3px 8px; font-size:0.72rem;" onclick="logout()">Keluar</button>
     </div>
   </header>
 
@@ -259,11 +210,11 @@
         ⚠️ <strong>Peringatan Stok Kritis!</strong>
         <span id="text-banner-stok">Beberapa produk hampir habis.</span>
       </div>
-      <button class="btn btn-warning role-admin-only" style="width: auto; padding: 4px 8px; font-size: 0.72rem;" onclick="switchTab('produk')">Cek Stok</button>
+      <button class="btn btn-warning" style="width: auto; padding: 4px 8px; font-size: 0.72rem;" onclick="switchTab('produk')">Cek Stok</button>
     </div>
 
     <!-- QUICK DASHBOARD STATS -->
-    <div class="grid-3" style="margin-bottom: 10px;">
+    <div class="grid-2" style="margin-bottom: 10px;">
       <div class="card" style="padding: 8px 12px; margin:0;">
         <small style="color:var(--text-muted); font-weight:600; font-size:0.7rem;">PENJUALAN HARI INI</small>
         <div style="font-weight:bold; color:var(--primary-dark); font-size:0.95rem;">Rp <span id="dash-omzet-hari">0</span></div>
@@ -271,10 +222,6 @@
       <div class="card" style="padding: 8px 12px; margin:0;">
         <small style="color:var(--text-muted); font-weight:600; font-size:0.7rem;">TRANSAKSI HARI INI</small>
         <div style="font-weight:bold; color:var(--secondary); font-size:0.95rem;"><span id="dash-trx-hari">0</span> Trx</div>
-      </div>
-      <div class="card" style="padding: 8px 12px; margin:0;">
-        <small style="color:var(--text-muted); font-weight:600; font-size:0.7rem;">PIUTANG (KASBON)</small>
-        <div style="font-weight:bold; color:var(--danger); font-size:0.95rem;">Rp <span id="dash-piutang">0</span></div>
       </div>
     </div>
 
@@ -291,14 +238,6 @@
 
       <div class="card">
         <h2>Keranjang Penjualan</h2>
-        
-        <!-- PELANGGAN SELECTOR -->
-        <div class="form-group" style="margin-bottom: 8px;">
-          <label>Pilih Pelanggan / Member:</label>
-          <select id="select-pelanggan-kasir">
-            <option value="">Pelanggan Umum (Guest)</option>
-          </select>
-        </div>
 
         <div style="overflow-x: auto; max-height:220px;">
           <table>
@@ -337,23 +276,16 @@
         <div class="grid-2">
           <div class="form-group">
             <label>Metode Pembayaran:</label>
-            <select id="select-metode" onchange="toggleFormKasbon()">
+            <select id="select-metode">
               <option value="Tunai">Tunai</option>
               <option value="QRIS">QRIS</option>
               <option value="Transfer Bank">Transfer Bank</option>
-              <option value="Kasbon">Kasbon (Utang/Piutang)</option>
             </select>
           </div>
           <div class="form-group">
             <label>Jumlah Bayar (Rp):</label>
             <input type="number" id="input-bayar" placeholder="0" oninput="hitungKembalian()">
           </div>
-        </div>
-
-        <!-- FORM JATUH TEMPO KASBON -->
-        <div class="form-group" id="container-kasbon" style="display:none; background:#fff1f2; padding:8px; border-radius:6px; border:1px solid #fecdd3;">
-          <label style="color:#9f1239;">Tanggal Jatuh Tempo Kasbon:</label>
-          <input type="date" id="input-tgl-jatuh-tempo">
         </div>
 
         <div class="row" style="display: flex; justify-content: space-between; margin-bottom: 10px; font-weight: bold;">
@@ -366,7 +298,7 @@
     </div>
   </div>
 
-  <!-- TAB 2: MANAGEMENT PRODUK (ADMIN ONLY) -->
+  <!-- TAB 2: MANAGEMENT PRODUK -->
   <div id="tab-produk" class="tab-content no-print">
     <div class="alert-banner" id="banner-stok-produk">
       <div class="details">
@@ -459,64 +391,7 @@
     </div>
   </div>
 
-  <!-- TAB 3: PELANGGAN & KASBON (CRM) -->
-  <div id="tab-pelanggan" class="tab-content no-print">
-    <div class="grid-2">
-      <div class="card">
-        <h2 id="form-pelanggan-title">Tambah Pelanggan Baru</h2>
-        <input type="hidden" id="edit-pelanggan-id">
-        <div class="form-group">
-          <label>Nama Lengkap *:</label>
-          <input type="text" id="cust-nama" placeholder="Contoh: Budi Santoso">
-        </div>
-        <div class="form-group">
-          <label>No. HP / WhatsApp *:</label>
-          <input type="text" id="cust-hp" placeholder="081234567890">
-        </div>
-        <div class="form-group">
-          <label>Alamat:</label>
-          <input type="text" id="cust-alamat" placeholder="Alamat Pelanggan">
-        </div>
-        <button class="btn btn-primary" onclick="simpanPelanggan()">Simpan Data Pelanggan</button>
-      </div>
-
-      <div class="card">
-        <h2>Buku Piutang & Kasbon</h2>
-        <div style="overflow-x: auto;">
-          <table>
-            <thead>
-              <tr>
-                <th>Pelanggan</th>
-                <th>Sisa Utang</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="tabel-piutang-pelanggan"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>Daftar Pelanggan & Poin Member</h2>
-      <div style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>Nama</th>
-              <th>No. HP</th>
-              <th>Alamat</th>
-              <th>Total Poin</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody id="tabel-master-pelanggan"></tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- TAB 4: LAPORAN & KEUANGAN (ADMIN ONLY) -->
+  <!-- TAB 3: LAPORAN & KEUANGAN -->
   <div id="tab-laporan" class="tab-content no-print">
     <div class="card">
       <h2>Filter & Opsi Laporan</h2>
@@ -602,12 +477,9 @@
             <tr>
               <th>ID Struk</th>
               <th>Waktu</th>
-              <th>Kasir</th>
-              <th>Pelanggan</th>
               <th>Metode</th>
               <th>Total</th>
               <th>Laba</th>
-              <th>Status</th>
               <th>Aksi</th>
             </tr>
           </thead>
@@ -620,9 +492,8 @@
   <!-- NAVIGASI UTAMA BAWAH -->
   <nav class="no-print">
     <button id="btn-tab-kasir" class="active" onclick="switchTab('kasir')"><span>🛒</span> Kasir</button>
-    <button id="btn-tab-produk" class="role-admin-only" onclick="switchTab('produk')"><span>📦</span> Produk</button>
-    <button id="btn-tab-pelanggan" onclick="switchTab('pelanggan')"><span>👥</span> Pelanggan</button>
-    <button id="btn-tab-laporan" class="role-admin-only" onclick="switchTab('laporan')"><span>📊</span> Laporan</button>
+    <button id="btn-tab-produk" onclick="switchTab('produk')"><span>📦</span> Produk</button>
+    <button id="btn-tab-laporan" onclick="switchTab('laporan')"><span>📊</span> Laporan</button>
   </nav>
 
   <!-- MODAL STRUK CETAK -->
@@ -636,8 +507,6 @@
           <hr style="border: none; border-top: 1px dashed #000; margin: 4px 0;">
           <p id="struk-waktu" style="font-size: 0.7rem;"></p>
           <p id="struk-id" style="font-size: 0.7rem;"></p>
-          <p id="struk-kasir" style="font-size: 0.7rem;"></p>
-          <p id="struk-pelanggan" style="font-size: 0.7rem; font-weight:bold;"></p>
         </div>
         <div id="struk-items"></div>
         <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
@@ -661,7 +530,7 @@
 
   <script>
     // -------------------------------------------------------------
-    // 1. FIREBASE CONFIGURATION
+    // FIREBASE CONFIGURATION
     // -------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyDrwkztKSHmBuw2J5ygf4wQv4WxkCVJacY",
@@ -688,52 +557,19 @@
     });
 
     // Global States
-    let currentUser = null;
     let produkList = [];
     let transaksiList = [];
-    let pelangganList = [];
     let pengeluaranList = [];
     let keranjang = [];
     let chartInstance = null;
     let chartTopProdukInstance = null;
     let tempFotoBase64 = '';
 
-    const USERS = [
-      { username: 'admin', pass: 'admin123', name: 'Admin Utama', role: 'admin' },
-      { username: 'kasir', pass: 'kasir123', name: 'Kasir Toko', role: 'kasir' }
-    ];
-
-    /* AUTHENTICATION */
-    function prosesLogin() {
-      const u = document.getElementById('login-user').value.trim();
-      const p = document.getElementById('login-pass').value.trim();
-
-      const found = USERS.find(user => user.username === u && user.pass === p);
-      if (found) {
-        currentUser = found;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('user-display-name').innerText = `👤 ${found.name}`;
-        
-        applyRolePermissions();
-        listenToDatabase();
-        generateAutoId();
-      } else {
-        alert('Username atau Password salah!');
-      }
-    }
-
-    function logout() {
-      currentUser = null;
-      document.getElementById('login-screen').style.display = 'flex';
-    }
-
-    function applyRolePermissions() {
-      const isKasir = currentUser && currentUser.role === 'kasir';
-      document.querySelectorAll('.role-admin-only').forEach(el => {
-        el.style.display = isKasir ? 'none' : '';
-      });
-      switchTab('kasir');
-    }
+    // Inisialisasi awal aplikasi
+    window.onload = function() {
+      listenToDatabase();
+      generateAutoId();
+    };
 
     /* REALTIME DATABASE LISTENER */
     function listenToDatabase() {
@@ -749,15 +585,6 @@
         transaksiList.sort((a,b) => new Date(b.waktuISO || b.waktu) - new Date(a.waktuISO || a.waktu));
         renderDashboardStats();
         renderLaporan();
-        renderBukuPiutang();
-      });
-
-      db.ref('pelanggan').on('value', (snapshot) => {
-        const data = snapshot.val();
-        pelangganList = data ? Object.values(data) : [];
-        renderPelangganDropdown();
-        renderMasterPelanggan();
-        renderBukuPiutang();
       });
 
       db.ref('pengeluaran').on('value', (snapshot) => {
@@ -772,11 +599,6 @@
     }
 
     function switchTab(tabName) {
-      if (currentUser.role === 'kasir' && (tabName === 'produk' || tabName === 'laporan')) {
-        alert('Akses Ditolak: Fitur Khusus Admin!');
-        return;
-      }
-
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
       document.getElementById(`tab-${tabName}`).classList.add('active');
@@ -798,11 +620,6 @@
       const omzetHari = trxHariIni.reduce((sum, t) => sum + t.total, 0);
       document.getElementById('dash-omzet-hari').innerText = omzetHari.toLocaleString();
       document.getElementById('dash-trx-hari').innerText = trxHariIni.length;
-
-      const totalPiutang = transaksiList
-        .filter(t => t.metode === 'Kasbon' && !t.lunas)
-        .reduce((sum, t) => sum + t.total, 0);
-      document.getElementById('dash-piutang').innerText = totalPiutang.toLocaleString();
     }
 
     function cekNotifikasiStokKritis() {
@@ -926,12 +743,6 @@
       renderTabelKeranjang();
     }
 
-    function toggleFormKasbon() {
-      const m = document.getElementById('select-metode').value;
-      const c = document.getElementById('container-kasbon');
-      c.style.display = m === 'Kasbon' ? 'block' : 'none';
-    }
-
     function hitungKembalian() {
       let net = keranjang.reduce((sum, item) => sum + (item.hargaEfektif * item.qty), 0);
       const val = parseFloat(document.getElementById('input-diskon-nilai').value) || 0;
@@ -948,13 +759,7 @@
     function prosesTransaksi() {
       if (keranjang.length === 0) return alert('Keranjang belanja kosong!');
 
-      const custId = document.getElementById('select-pelanggan-kasir').value;
-      const selectedCust = pelangganList.find(c => c.id === custId);
       const metode = document.getElementById('select-metode').value;
-
-      if (metode === 'Kasbon' && !selectedCust) {
-        return alert('Harap pilih nama pelanggan untuk transaksi Kasbon/Utang!');
-      }
 
       let net = keranjang.reduce((sum, item) => sum + (item.hargaEfektif * item.qty), 0);
       let subtotalOriginal = keranjang.reduce((sum, item) => sum + (item.hargaJual * item.qty), 0);
@@ -968,7 +773,7 @@
       const totalAkhir = Math.max(0, net - diskonTambahan);
       const bayar = parseFloat(document.getElementById('input-bayar').value) || 0;
 
-      if (metode !== 'Kasbon' && bayar < totalAkhir) {
+      if (bayar < totalAkhir) {
         return alert('Uang pembayaran kurang!');
       }
 
@@ -980,20 +785,15 @@
         waktu: now.toLocaleString('id-ID'),
         waktuISO: now.toISOString(),
         tanggalISO: now.toISOString().split('T')[0],
-        kasir: currentUser ? currentUser.name : 'Kasir',
-        pelangganId: custId || '',
-        pelangganNama: selectedCust ? selectedCust.nama : 'Umum (Guest)',
         items: keranjang,
         subtotal: subtotalOriginal,
         diskonTotal: diskonItemTotal + diskonTambahan,
         total: totalAkhir,
         hpp: totalHPP,
         laba: totalAkhir - totalHPP,
-        bayar: metode === 'Kasbon' ? 0 : bayar,
-        kembalian: metode === 'Kasbon' ? 0 : Math.max(0, bayar - totalAkhir),
-        metode: metode,
-        lunas: metode !== 'Kasbon',
-        tglJatuhTempo: metode === 'Kasbon' ? document.getElementById('input-tgl-jatuh-tempo').value : ''
+        bayar: bayar,
+        kembalian: Math.max(0, bayar - totalAkhir),
+        metode: metode
       };
 
       // Potong Stok
@@ -1002,12 +802,6 @@
         if (p) db.ref('produk/' + p.id + '/stok').set(p.stok - item.qty);
       });
 
-      // Tambah Poin Pelanggan (1 poin per 10.000)
-      if (selectedCust) {
-        const tambahanPoin = Math.floor(totalAkhir / 10000);
-        db.ref('pelanggan/' + selectedCust.id + '/poin').set((selectedCust.poin || 0) + tambahanPoin);
-      }
-
       // Simpan Transaksi
       db.ref('transaksi/' + trxId).set(transaksi).then(() => {
         tampilkanStruk(transaksi);
@@ -1015,92 +809,6 @@
         document.getElementById('input-bayar').value = '';
         renderTabelKeranjang();
       });
-    }
-
-    /* PELANGGAN & KASBON MANAGEMENT */
-    function renderPelangganDropdown() {
-      const sel = document.getElementById('select-pelanggan-kasir');
-      sel.innerHTML = '<option value="">Pelanggan Umum (Guest)</option>';
-      pelangganList.forEach(c => {
-        sel.innerHTML += `<option value="${c.id}">${c.nama} (${c.hp})</option>`;
-      });
-    }
-
-    function simpanPelanggan() {
-      const nama = document.getElementById('cust-nama').value.trim();
-      const hp = document.getElementById('cust-hp').value.trim();
-      const alamat = document.getElementById('cust-alamat').value.trim();
-      const editId = document.getElementById('edit-pelanggan-id').value;
-
-      if (!nama || !hp) return alert('Nama & No. HP Wajib diisi!');
-
-      const custId = editId || 'CUST-' + Date.now().toString().slice(-5);
-      const payload = { id: custId, nama, hp, alamat, poin: 0 };
-
-      db.ref('pelanggan/' + custId).update(payload).then(() => {
-        alert('Data Pelanggan Berhasil Disimpan!');
-        document.getElementById('cust-nama').value = '';
-        document.getElementById('cust-hp').value = '';
-        document.getElementById('cust-alamat').value = '';
-        document.getElementById('edit-pelanggan-id').value = '';
-      });
-    }
-
-    function renderMasterPelanggan() {
-      const tbody = document.getElementById('tabel-master-pelanggan');
-      tbody.innerHTML = '';
-      pelangganList.forEach(c => {
-        tbody.innerHTML += `
-          <tr>
-            <td><b>${c.nama}</b></td>
-            <td>${c.hp}</td>
-            <td>${c.alamat || '-'}</td>
-            <td><span style="background:#dbeafe; color:#1e40af; padding:2px 6px; border-radius:4px; font-weight:bold;">${c.poin || 0} Pts</span></td>
-            <td>
-              <button class="btn btn-warning" style="padding:2px 6px;" onclick="editPelanggan('${c.id}')">Edit</button>
-            </td>
-          </tr>
-        `;
-      });
-    }
-
-    function editPelanggan(id) {
-      const c = pelangganList.find(p => p.id === id);
-      if (!c) return;
-      document.getElementById('edit-pelanggan-id').value = c.id;
-      document.getElementById('cust-nama').value = c.nama;
-      document.getElementById('cust-hp').value = c.hp;
-      document.getElementById('cust-alamat').value = c.alamat || '';
-    }
-
-    function renderBukuPiutang() {
-      const tbody = document.getElementById('tabel-piutang-pelanggan');
-      tbody.innerHTML = '';
-
-      const kasbonUnpaid = transaksiList.filter(t => t.metode === 'Kasbon' && !t.lunas);
-
-      if (kasbonUnpaid.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; color:#94a3b8;">Tidak ada tunggakan kasbon</td></tr>';
-        return;
-      }
-
-      kasbonUnpaid.forEach(t => {
-        tbody.innerHTML += `
-          <tr>
-            <td><b>${t.pelangganNama}</b><br><small style="color:#64748b;">${t.id} (${t.waktu})</small></td>
-            <td style="color:var(--danger); font-weight:bold;">Rp ${t.total.toLocaleString()}</td>
-            <td><button class="btn btn-success" style="padding:2px 6px;" onclick="pelunasanKasbon('${t.id}')">Pelunasan</button></td>
-          </tr>
-        `;
-      });
-    }
-
-    function pelunasanKasbon(trxId) {
-      if (confirm('Konfirmasi pelunasan kasbon ini?')) {
-        db.ref('transaksi/' + trxId).update({ lunas: true, bayar: 0, status: 'Lunas Kasbon' }).then(() => {
-          alert('Piutang berhasil dilunasi!');
-        });
-      }
     }
 
     /* MANAGEMENT PRODUK */
@@ -1239,8 +947,6 @@
     }
 
     function renderLaporan() {
-      if (currentUser && currentUser.role === 'kasir') return;
-
       const tglMulai = document.getElementById('filter-tgl-mulai').value;
       const tglSelesai = document.getElementById('filter-tgl-selesai').value;
 
@@ -1267,12 +973,9 @@
           <tr>
             <td><small>${t.id}</small></td>
             <td>${t.waktu}</td>
-            <td><small>${t.kasir || 'Kasir'}</small></td>
-            <td><small>${t.pelangganNama || 'Umum'}</small></td>
             <td>${t.metode}</td>
             <td>Rp ${t.total.toLocaleString()}</td>
             <td style="color:var(--success); font-weight:bold;">Rp ${t.laba.toLocaleString()}</td>
-            <td>${t.metode === 'Kasbon' ? (t.lunas ? '<span style="color:green">Lunas</span>' : '<span style="color:red">Belum Lunas</span>') : 'Lunas'}</td>
             <td><button class="btn btn-secondary" style="padding:2px 6px;" onclick='tampilkanStruk(${JSON.stringify(t)})'>Struk</button></td>
           </tr>
         `;
@@ -1381,8 +1084,6 @@
     function tampilkanStruk(trx) {
       document.getElementById('struk-waktu').innerText = trx.waktu;
       document.getElementById('struk-id').innerText = 'ID: ' + trx.id;
-      document.getElementById('struk-kasir').innerText = 'Kasir: ' + (trx.kasir || 'Staff');
-      document.getElementById('struk-pelanggan').innerText = 'Pelanggan: ' + (trx.pelangganNama || 'Umum');
       
       const itemsContainer = document.getElementById('struk-items');
       itemsContainer.innerHTML = '';
