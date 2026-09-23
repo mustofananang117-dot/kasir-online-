@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KASIR JUNG SHOP - Analytics & Cloud Powered</title>
+  <title>KASIR JUNG SHOP - Multi-User & Cloud Powered</title>
   
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -29,17 +29,45 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); padding-bottom: 75px; }
 
+    /* LAYOUT LOGIN */
+    #login-screen {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(135deg, #1e3a8a, var(--primary));
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      text-align: center;
+    }
+
     header {
       background: linear-gradient(135deg, #1e3a8a, var(--primary));
       color: white;
       padding: 1rem;
-      text-align: center;
       font-weight: 700;
-      font-size: 1.3rem;
+      font-size: 1.2rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .header-user-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+      font-weight: normal;
     }
 
     .status-badge {
@@ -47,7 +75,6 @@
       padding: 4px 8px;
       border-radius: 12px;
       background: rgba(255,255,255,0.2);
-      font-weight: normal;
     }
 
     nav {
@@ -109,7 +136,7 @@
     .alert-banner .details { font-size: 0.85rem; color: #92400e; }
     .alert-banner .details strong { color: #78350f; }
 
-    .form-group { margin-bottom: 10px; }
+    .form-group { margin-bottom: 10px; text-align: left; }
     .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: #475569; }
     
     input, button, select, textarea {
@@ -229,9 +256,38 @@
 </head>
 <body>
 
+  <!-- SCREEN LOGIN -->
+  <div id="login-screen">
+    <div class="login-box">
+      <h2 style="border:none; text-align:center; font-size:1.4rem; margin-bottom:5px;">KASIR JUNG SHOP</h2>
+      <p style="font-size:0.8rem; color:#64748b; margin-bottom:20px;">Silakan login untuk mengelola sistem</p>
+
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" id="login-user" placeholder="admin / kasir">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-pass" placeholder="Password">
+      </div>
+
+      <button class="btn btn-primary" style="padding:10px; margin-top:10px; width:100%;" onclick="prosesLogin()">Login</button>
+      
+      <div style="margin-top:15px; font-size:0.75rem; color:#64748b; text-align:left; background:#f1f5f9; padding:8px; border-radius:6px;">
+        <b>Akun Default:</b><br>
+        • Admin: <code>admin</code> / <code>admin123</code><br>
+        • Kasir: <code>kasir</code> / <code>kasir123</code>
+      </div>
+    </div>
+  </div>
+
   <header class="no-print">
     <span>KASIR JUNG SHOP</span>
-    <span class="status-badge" id="cloud-status">☁️ Cloud Connected</span>
+    <div class="header-user-info">
+      <span class="status-badge" id="cloud-status">☁️ Connected</span>
+      <span id="user-display-name" style="font-weight:bold;">👤 Admin</span>
+      <button class="btn btn-danger" style="padding:3px 8px; font-size:0.75rem;" onclick="logout()">Logout</button>
+    </div>
   </header>
 
   <!-- TAB 1: KASIR -->
@@ -240,9 +296,9 @@
     <div class="alert-banner" id="banner-stok-kasir">
       <div class="details">
         ⚠️ <strong>Peringatan Stok Kritis / Habis!</strong>
-        <span id="text-banner-stok">Ada beberapa produk yang stoknya tersisa ≤ 5 atau habis.</span>
+        <span id="text-banner-stok">Ada produk yang stoknya tersisa kurang dari 2.</span>
       </div>
-      <button class="btn btn-warning" style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="switchTab('produk')">Cek Stok</button>
+      <button class="btn btn-warning role-admin-only" style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="switchTab('produk')">Cek Stok</button>
     </div>
 
     <div class="grid-2" style="grid-template-columns: 1fr; gap: 10px;">
@@ -316,13 +372,13 @@
     </div>
   </div>
 
-  <!-- TAB 2: PRODUK -->
+  <!-- TAB 2: PRODUK (ADMIN ONLY) -->
   <div id="tab-produk" class="tab-content no-print">
     <!-- Banner Notifikasi Stok Kritis -->
     <div class="alert-banner" id="banner-stok-produk">
       <div class="details">
         ⚠️ <strong>Peringatan Stok Kritis / Habis!</strong>
-        <span id="text-banner-stok-produk">Segera lakukan penambahan stok pada produk terkait.</span>
+        <span id="text-banner-stok-produk">Segera tambahkan stok produk terkait.</span>
       </div>
     </div>
 
@@ -410,7 +466,7 @@
     </div>
   </div>
 
-  <!-- TAB 3: LAPORAN & ANALYTICS -->
+  <!-- TAB 3: LAPORAN & ANALYTICS (ADMIN ONLY) -->
   <div id="tab-laporan" class="tab-content no-print">
     <div class="card">
       <h2>Filter Laporan</h2>
@@ -476,6 +532,7 @@
             <tr>
               <th>ID Struk</th>
               <th>Waktu</th>
+              <th>Kasir</th>
               <th>Metode</th>
               <th>Omzet</th>
               <th>Laba</th>
@@ -491,8 +548,8 @@
   <!-- NAVIGASI BAWAH -->
   <nav class="no-print">
     <button id="btn-tab-kasir" class="active" onclick="switchTab('kasir')"><span>🛒</span> Kasir</button>
-    <button id="btn-tab-produk" onclick="switchTab('produk')"><span>📦</span> Produk</button>
-    <button id="btn-tab-laporan" onclick="switchTab('laporan')"><span>📊</span> Laporan</button>
+    <button id="btn-tab-produk" class="role-admin-only" onclick="switchTab('produk')"><span>📦</span> Produk</button>
+    <button id="btn-tab-laporan" class="role-admin-only" onclick="switchTab('laporan')"><span>📊</span> Laporan</button>
   </nav>
 
   <!-- MODAL STRUK -->
@@ -504,6 +561,7 @@
           <p>Jl. Toko Utama No. 88</p>
           <p id="struk-waktu" style="font-size: 0.7rem; margin-top: 4px;"></p>
           <p id="struk-id" style="font-size: 0.7rem;"></p>
+          <p id="struk-kasir" style="font-size: 0.7rem; font-weight:bold;"></p>
         </div>
         <div id="struk-items"></div>
         <hr style="border: none; border-top: 1px dashed #000; margin: 6px 0;">
@@ -529,14 +587,14 @@
     // 1. KONFIGURASI FIREBASE
     // -------------------------------------------------------------
     const firebaseConfig = {
-     apiKey: "AIzaSyDrwkztKSHmBuw2J5ygf4wQv4WxkCVJacY",
-  authDomain: "kasir-jung-shop.firebaseapp.com",
-  databaseURL: "https://kasir-jung-shop-default-rtdb.firebaseio.com",
-  projectId: "kasir-jung-shop",
-  storageBucket: "kasir-jung-shop.firebasestorage.app",
-  messagingSenderId: "989191859033",
-  appId: "1:989191859033:web:a85f8534dbf6a93dbe3a48",
-  measurementId: "G-0DEBRYX63R"
+      apiKey: "AIzaSyDrwkztKSHmBuw2J5ygf4wQv4WxkCVJacY",
+      authDomain: "kasir-jung-shop.firebaseapp.com",
+      databaseURL: "https://kasir-jung-shop-default-rtdb.firebaseio.com",
+      projectId: "kasir-jung-shop",
+      storageBucket: "kasir-jung-shop.firebasestorage.app",
+      messagingSenderId: "989191859033",
+      appId: "1:989191859033:web:a85f8534dbf6a93dbe3a48",
+      measurementId: "G-0DEBRYX63R"
     };
 
     firebase.initializeApp(firebaseConfig);
@@ -545,15 +603,16 @@
     db.ref('.info/connected').on('value', (snap) => {
       const statusEl = document.getElementById('cloud-status');
       if (snap.val() === true) {
-        statusEl.innerText = '☁️ Cloud Connected';
+        statusEl.innerText = '☁️ Connected';
         statusEl.style.background = 'rgba(16, 185, 129, 0.3)';
       } else {
-        statusEl.innerText = '📡 Offline Mode';
+        statusEl.innerText = '📡 Offline';
         statusEl.style.background = 'rgba(239, 68, 68, 0.3)';
       }
     });
 
     // Global State
+    let currentUser = null; // { username, role }
     let produkList = [];
     let transaksiList = [];
     let keranjang = [];
@@ -561,7 +620,51 @@
     let chartTopProdukInstance = null;
     let tempFotoBase64 = '';
 
-    // Realtime Listener
+    // System User List (Dapat diperluas/disimpan di DB jika diperlukan)
+    const USERS = [
+      { username: 'admin', pass: 'admin123', name: 'Admin Utama', role: 'admin' },
+      { username: 'kasir', pass: 'kasir123', name: 'Kasir Toko', role: 'kasir' }
+    ];
+
+    /* AUTH LOGIC */
+    function prosesLogin() {
+      const u = document.getElementById('login-user').value.trim();
+      const p = document.getElementById('login-pass').value.trim();
+
+      const found = USERS.find(user => user.username === u && user.pass === p);
+      if (found) {
+        currentUser = found;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('user-display-name').innerText = `👤 ${found.name} (${found.role.toUpperCase()})`;
+        
+        applyRolePermissions();
+        listenToDatabase();
+        generateAutoId();
+      } else {
+        alert('Username atau Password salah!');
+      }
+    }
+
+    function logout() {
+      currentUser = null;
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('login-user').value = '';
+      document.getElementById('login-pass').value = '';
+    }
+
+    function applyRolePermissions() {
+      const isKasir = currentUser && currentUser.role === 'kasir';
+      const adminElements = document.querySelectorAll('.role-admin-only');
+
+      adminElements.forEach(el => {
+        el.style.display = isKasir ? 'none' : '';
+      });
+
+      // Paksa ke tab kasir jika role kasir
+      switchTab('kasir');
+    }
+
+    // Realtime Database Listener
     function listenToDatabase() {
       db.ref('produk').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -582,6 +685,11 @@
     }
 
     function switchTab(tabName) {
+      if (currentUser.role === 'kasir' && tabName !== 'kasir') {
+        alert('Akses Ditolak: Fitur ini hanya untuk Admin!');
+        return;
+      }
+
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
       document.getElementById(`tab-${tabName}`).classList.add('active');
@@ -596,14 +704,14 @@
       cekNotifikasiStokKritis();
     }
 
-    /* FITUR NOTIFIKASI STOK KRITIS */
+    /* FITUR NOTIFIKASI STOK KRITIS (< 2 / tersisa 1 atau 0) */
     function cekNotifikasiStokKritis() {
-      const produkKritis = produkList.filter(p => p.stok <= 5);
+      const produkKritis = produkList.filter(p => p.stok < 2);
       const bannerKasir = document.getElementById('banner-stok-kasir');
       const bannerProduk = document.getElementById('banner-stok-produk');
 
       if (produkKritis.length > 0) {
-        const teks = `Terdapat ${produkKritis.length} produk yang stoknya tersisa ≤ 5 atau habis.`;
+        const teks = `Terdapat ${produkKritis.length} produk yang stoknya tersisa kurang dari 2 (kritis/habis).`;
         document.getElementById('text-banner-stok').innerText = teks;
         document.getElementById('text-banner-stok-produk').innerText = teks;
         bannerKasir.classList.add('active');
@@ -641,7 +749,8 @@
 
       filtered.forEach(p => {
         const hargaEfektif = p.hargaJual - (p.hargaJual * (p.diskon / 100));
-        let badgeClass = p.stok <= 0 ? 'stok-habis' : (p.stok <= 5 ? 'stok-kritis' : 'stok-aman');
+        // Stok kritis terpicu bila stok < 2
+        let badgeClass = p.stok <= 0 ? 'stok-habis' : (p.stok < 2 ? 'stok-kritis' : 'stok-aman');
         const defaultImg = 'https://via.placeholder.com/150?text=No+Image';
 
         container.innerHTML += `
@@ -754,6 +863,7 @@
         id: trxId,
         waktu: new Date().toLocaleString('id-ID'),
         tanggalISO: new Date().toISOString().split('T')[0],
+        kasir: currentUser ? currentUser.name : 'Unknown',
         items: keranjang,
         subtotal: subtotalOriginal,
         diskonTotal: diskonItemTotal + diskonTambahan,
@@ -780,7 +890,7 @@
       });
     }
 
-    /* FIREBASE PRODUK MANAGEMENT */
+    /* PRODUK MANAGEMENT */
     function simpanProduk() {
       const editId = document.getElementById('edit-produk-id').value;
       const id = document.getElementById('p-id').value;
@@ -894,6 +1004,8 @@
 
     /* LAPORAN, STATISTIK & PRODUK TERLARIS */
     function renderLaporan() {
+      if (currentUser && currentUser.role === 'kasir') return; // Bypass jika kasir
+
       const tglMulai = document.getElementById('filter-tgl-mulai').value;
       const tglSelesai = document.getElementById('filter-tgl-selesai').value;
 
@@ -912,6 +1024,7 @@
           <tr>
             <td><small>${t.id}</small></td>
             <td>${t.waktu}</td>
+            <td><small>${t.kasir || 'Kasir'}</small></td>
             <td>${t.metode}</td>
             <td>Rp ${t.total.toLocaleString()}</td>
             <td style="color:var(--success); font-weight:bold;">Rp ${t.laba.toLocaleString()}</td>
@@ -942,7 +1055,7 @@
         }
       });
 
-      // Convert ke Array & Sort Paling Banyak Terjual
+      // Sort Paling Banyak Terjual
       const sorted = Object.keys(productStats)
         .map(nama => ({ nama, ...productStats[nama] }))
         .sort((a, b) => b.qty - a.qty);
@@ -967,7 +1080,7 @@
         });
       }
 
-      // Render Grafik Statistik Penjualan Produk (Bar Chart)
+      // Render Grafik Produk Terlaris
       const top5 = sorted.slice(0, 5);
       const ctx = document.getElementById('chartProdukTerlaris').getContext('2d');
 
@@ -1027,6 +1140,8 @@
     function tampilkanStruk(trx) {
       document.getElementById('struk-waktu').innerText = trx.waktu;
       document.getElementById('struk-id').innerText = 'ID: ' + trx.id;
+      document.getElementById('struk-kasir').innerText = 'Kasir: ' + (trx.kasir || 'Staff');
+      
       const itemsContainer = document.getElementById('struk-items');
       itemsContainer.innerHTML = '';
       trx.items.forEach(item => {
@@ -1044,10 +1159,6 @@
     function tutupStruk() {
       document.getElementById('modal-struk').classList.remove('active');
     }
-
-    // Start App
-    generateAutoId();
-    listenToDatabase();
   </script>
 </body>
 </html>
