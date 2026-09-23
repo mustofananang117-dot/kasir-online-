@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KASIR JUNG SHOP - Cloud Powered</title>
+  <title>KASIR JUNG SHOP - Analytics & Cloud Powered</title>
   
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -93,6 +93,22 @@
     }
     h2 { font-size: 1.1rem; margin-bottom: 1rem; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.4rem; }
 
+    /* Alert Stok Kritis Banner */
+    .alert-banner {
+      background: #fffbebf8;
+      border: 1px solid #fcd34d;
+      border-left: 5px solid var(--warning);
+      border-radius: 8px;
+      padding: 12px 15px;
+      margin-bottom: 1rem;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .alert-banner.active { display: flex; }
+    .alert-banner .details { font-size: 0.85rem; color: #92400e; }
+    .alert-banner .details strong { color: #78350f; }
+
     .form-group { margin-bottom: 10px; }
     .form-group label { display: block; font-size: 0.8rem; font-weight: 600; margin-bottom: 4px; color: #475569; }
     
@@ -170,6 +186,22 @@
     .stok-kritis { background: #fef3c7; color: #92400e; }
     .stok-habis { background: #fee2e2; color: #991b1b; }
 
+    .top-rank-badge {
+      display: inline-block;
+      width: 22px;
+      height: 22px;
+      line-height: 22px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      color: #334155;
+      font-weight: bold;
+      text-align: center;
+      font-size: 0.75rem;
+    }
+    .top-1 { background: #fef08a; color: #854d0e; }
+    .top-2 { background: #e2e8f0; color: #475569; }
+    .top-3 { background: #ffedd5; color: #9a3412; }
+
     table { width: 100%; border-collapse: collapse; margin-bottom: 1rem; font-size: 0.82rem; }
     th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
     th { background: #f8fafc; font-weight: 600; color: #475569; }
@@ -204,6 +236,15 @@
 
   <!-- TAB 1: KASIR -->
   <div id="tab-kasir" class="tab-content active no-print">
+    <!-- Banner Notifikasi Stok Kritis -->
+    <div class="alert-banner" id="banner-stok-kasir">
+      <div class="details">
+        ⚠️ <strong>Peringatan Stok Kritis / Habis!</strong>
+        <span id="text-banner-stok">Ada beberapa produk yang stoknya tersisa ≤ 5 atau habis.</span>
+      </div>
+      <button class="btn btn-warning" style="width: auto; padding: 4px 10px; font-size: 0.75rem;" onclick="switchTab('produk')">Cek Stok</button>
+    </div>
+
     <div class="grid-2" style="grid-template-columns: 1fr; gap: 10px;">
       <div class="card">
         <div class="grid-2" style="margin-bottom: 10px;">
@@ -277,6 +318,14 @@
 
   <!-- TAB 2: PRODUK -->
   <div id="tab-produk" class="tab-content no-print">
+    <!-- Banner Notifikasi Stok Kritis -->
+    <div class="alert-banner" id="banner-stok-produk">
+      <div class="details">
+        ⚠️ <strong>Peringatan Stok Kritis / Habis!</strong>
+        <span id="text-banner-stok-produk">Segera lakukan penambahan stok pada produk terkait.</span>
+      </div>
+    </div>
+
     <div class="card">
       <h2 id="form-produk-title">Tambah / Edit Produk</h2>
       <input type="hidden" id="edit-produk-id">
@@ -361,7 +410,7 @@
     </div>
   </div>
 
-  <!-- TAB 3: LAPORAN -->
+  <!-- TAB 3: LAPORAN & ANALYTICS -->
   <div id="tab-laporan" class="tab-content no-print">
     <div class="card">
       <h2>Filter Laporan</h2>
@@ -391,9 +440,32 @@
       </div>
     </div>
 
+    <div class="grid-2">
+      <div class="card">
+        <h2>Grafik Penjualan & Laba</h2>
+        <canvas id="chartLaporan" height="120"></canvas>
+      </div>
+      <div class="card">
+        <h2>Statistik Penjualan Produk (Unit Terjual)</h2>
+        <canvas id="chartProdukTerlaris" height="120"></canvas>
+      </div>
+    </div>
+
     <div class="card">
-      <h2>Grafik Penjualan & Laba</h2>
-      <canvas id="chartLaporan" height="100"></canvas>
+      <h2>🏆 Produk Terlaris (Top Selling)</h2>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 50px;">Peringkat</th>
+              <th>Nama Produk</th>
+              <th>Total Terjual (Qty)</th>
+              <th>Total Omzet Produk</th>
+            </tr>
+          </thead>
+          <tbody id="tabel-top-produk"></tbody>
+        </table>
+      </div>
     </div>
 
     <div class="card">
@@ -454,24 +526,21 @@
 
   <script>
     // -------------------------------------------------------------
-    // 1. KONFIGURASI FIREBASE (Ganti dengan Key Akun Firebase Kamu)
+    // 1. KONFIGURASI FIREBASE
     // -------------------------------------------------------------
     const firebaseConfig = {
-      apiKey: "AIzaSyDrwkztKSHmBuw2J5ygf4wQv4WxkCVJacY",
-  authDomain: "kasir-jung-shop.firebaseapp.com",
-  databaseURL: "https://kasir-jung-shop-default-rtdb.firebaseio.com",
-  projectId: "kasir-jung-shop",
-  storageBucket: "kasir-jung-shop.firebasestorage.app",
-  messagingSenderId: "989191859033",
-  appId: "1:989191859033:web:a85f8534dbf6a93dbe3a48",
-  measurementId: "G-0DEBRYX63R"
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef"
     };
 
-    // Inisialisasi Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     
-    // Enable Offline Persistence
     db.ref('.info/connected').on('value', (snap) => {
       const statusEl = document.getElementById('cloud-status');
       if (snap.val() === true) {
@@ -488,18 +557,17 @@
     let transaksiList = [];
     let keranjang = [];
     let chartInstance = null;
+    let chartTopProdukInstance = null;
     let tempFotoBase64 = '';
 
-    // Realtime Listener Firebase
+    // Realtime Listener
     function listenToDatabase() {
-      // Stream Data Produk
       db.ref('produk').on('value', (snapshot) => {
         const data = snapshot.val();
         produkList = data ? Object.values(data) : [];
         renderAll();
       });
 
-      // Stream Data Transaksi
       db.ref('transaksi').on('value', (snapshot) => {
         const data = snapshot.val();
         transaksiList = data ? Object.values(data) : [];
@@ -524,6 +592,25 @@
       updateKategoriDropdown();
       renderProdukKasir();
       renderTabelMasterProduk();
+      cekNotifikasiStokKritis();
+    }
+
+    /* FITUR NOTIFIKASI STOK KRITIS */
+    function cekNotifikasiStokKritis() {
+      const produkKritis = produkList.filter(p => p.stok <= 5);
+      const bannerKasir = document.getElementById('banner-stok-kasir');
+      const bannerProduk = document.getElementById('banner-stok-produk');
+
+      if (produkKritis.length > 0) {
+        const teks = `Terdapat ${produkKritis.length} produk yang stoknya tersisa ≤ 5 atau habis.`;
+        document.getElementById('text-banner-stok').innerText = teks;
+        document.getElementById('text-banner-stok-produk').innerText = teks;
+        bannerKasir.classList.add('active');
+        bannerProduk.classList.add('active');
+      } else {
+        bannerKasir.classList.remove('active');
+        bannerProduk.classList.remove('active');
+      }
     }
 
     function updateKategoriDropdown() {
@@ -677,13 +764,13 @@
         metode: document.getElementById('select-metode').value
       };
 
-      // Potong Stok di Firebase
+      // Potong Stok
       keranjang.forEach(item => {
         const p = produkList.find(prod => prod.id === item.id);
         if (p) db.ref('produk/' + p.id + '/stok').set(p.stok - item.qty);
       });
 
-      // Simpan Transaksi ke Firebase Cloud
+      // Simpan Transaksi
       db.ref('transaksi/' + trxId).set(transaksi).then(() => {
         tampilkanStruk(transaksi);
         keranjang = [];
@@ -711,9 +798,8 @@
 
       const payload = { id: targetId, nama, kategori, tipe, stok, hargaBeli, hargaJual, diskon, foto: fotoData };
 
-      // Push / Update ke Firebase
       db.ref('produk/' + targetId).set(payload).then(() => {
-        alert('Produk berhasil disimpan ke Cloud Firebase!');
+        alert('Produk berhasil disimpan ke Cloud!');
         resetFormProduk();
       });
     }
@@ -805,7 +891,7 @@
       });
     }
 
-    /* LAPORAN LOGIC */
+    /* LAPORAN, STATISTIK & PRODUK TERLARIS */
     function renderLaporan() {
       const tglMulai = document.getElementById('filter-tgl-mulai').value;
       const tglSelesai = document.getElementById('filter-tgl-selesai').value;
@@ -835,7 +921,73 @@
 
       document.getElementById('rep-omzet').innerText = omzet.toLocaleString();
       document.getElementById('rep-laba').innerText = laba.toLocaleString();
+      
       renderChart(list);
+      renderTopProdukAndChart(list);
+    }
+
+    function renderTopProdukAndChart(listData) {
+      const productStats = {};
+
+      listData.forEach(t => {
+        if (t.items && Array.isArray(t.items)) {
+          t.items.forEach(item => {
+            if (!productStats[item.nama]) {
+              productStats[item.nama] = { qty: 0, omzet: 0 };
+            }
+            productStats[item.nama].qty += item.qty;
+            productStats[item.nama].omzet += (item.hargaEfektif * item.qty);
+          });
+        }
+      });
+
+      // Convert ke Array & Sort Paling Banyak Terjual
+      const sorted = Object.keys(productStats)
+        .map(nama => ({ nama, ...productStats[nama] }))
+        .sort((a, b) => b.qty - a.qty);
+
+      // Render Tabel Peringkat Produk Terlaris
+      const tbody = document.getElementById('tabel-top-produk');
+      tbody.innerHTML = '';
+
+      if (sorted.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#94a3b8;">Belum ada data penjualan</td></tr>';
+      } else {
+        sorted.forEach((p, idx) => {
+          let rankClass = idx === 0 ? 'top-1' : (idx === 1 ? 'top-2' : (idx === 2 ? 'top-3' : ''));
+          tbody.innerHTML += `
+            <tr>
+              <td><span class="top-rank-badge ${rankClass}">${idx + 1}</span></td>
+              <td><b>${p.nama}</b></td>
+              <td><b>${p.qty}</b> Unit</td>
+              <td>Rp ${p.omzet.toLocaleString()}</td>
+            </tr>
+          `;
+        });
+      }
+
+      // Render Grafik Statistik Penjualan Produk (Bar Chart)
+      const top5 = sorted.slice(0, 5);
+      const ctx = document.getElementById('chartProdukTerlaris').getContext('2d');
+
+      if (chartTopProdukInstance) chartTopProdukInstance.destroy();
+
+      chartTopProdukInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: top5.map(p => p.nama),
+          datasets: [{
+            label: 'Unit Terjual (Qty)',
+            data: top5.map(p => p.qty),
+            backgroundColor: '#10b981'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: { y: { beginAtZero: true } }
+        }
+      });
     }
 
     function resetFilterTanggal() {
