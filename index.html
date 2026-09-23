@@ -3,9 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>KASIR JUNG SHOP</title>
+  <title>KASIR JUNG SHOP - Cloud Powered</title>
+  
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Firebase SDK (v9 / v10 Compatibility Mode) -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
   <style>
     :root {
       --primary: #2563eb;
@@ -31,7 +37,17 @@
       font-weight: 700;
       font-size: 1.3rem;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 4px 8px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.2);
+      font-weight: normal;
     }
 
     nav {
@@ -149,12 +165,7 @@
       text-overflow: ellipsis;
     }
 
-    .badge-stok {
-      font-size: 0.7rem;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 600;
-    }
+    .badge-stok { font-size: 0.7rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
     .stok-aman { background: #dcfce7; color: #166534; }
     .stok-kritis { background: #fef3c7; color: #92400e; }
     .stok-habis { background: #fee2e2; color: #991b1b; }
@@ -163,21 +174,14 @@
     th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
     th { background: #f8fafc; font-weight: 600; color: #475569; }
 
-    .summary-card {
-      background: #f1f5f9;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-    }
+    .summary-card { background: #f1f5f9; padding: 10px; border-radius: 8px; margin-bottom: 10px; }
     .summary-card .row { display: flex; justify-content: space-between; margin-bottom: 4px; font-size: 0.9rem; }
     .summary-card .row.total { font-weight: bold; font-size: 1.1rem; border-top: 1px solid var(--border); padding-top: 6px; color: var(--primary); }
 
-    /* MODAL */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; padding: 15px; }
     .modal.active { display: flex; }
     .modal-content { background: white; padding: 20px; border-radius: 10px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
 
-    /* STRUK PRINT */
     .struk-box { font-family: 'Courier New', Courier, monospace; font-size: 0.8rem; line-height: 1.3; }
     .struk-header { text-align: center; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 5px; }
     .struk-footer { text-align: center; margin-top: 10px; border-top: 1px dashed #000; padding-top: 5px; }
@@ -193,9 +197,12 @@
 </head>
 <body>
 
-  <header class="no-print">KASIR JUNG SHOP</header>
+  <header class="no-print">
+    <span>KASIR JUNG SHOP</span>
+    <span class="status-badge" id="cloud-status">☁️ Cloud Connected</span>
+  </header>
 
-  <!-- TAB 1: TRANSAKSI (KASIR) -->
+  <!-- TAB 1: KASIR -->
   <div id="tab-kasir" class="tab-content active no-print">
     <div class="grid-2" style="grid-template-columns: 1fr; gap: 10px;">
       <div class="card">
@@ -268,7 +275,7 @@
     </div>
   </div>
 
-  <!-- TAB 2: MANAJEMEN PRODUK -->
+  <!-- TAB 2: PRODUK -->
   <div id="tab-produk" class="tab-content no-print">
     <div class="card">
       <h2 id="form-produk-title">Tambah / Edit Produk</h2>
@@ -292,7 +299,7 @@
         </div>
         <div class="form-group">
           <label>Tipe / Varian (Ketik Manual):</label>
-          <input type="text" id="p-tipe" placeholder="Contoh: Merah XL / Rasa Cokelat / 250ml">
+          <input type="text" id="p-tipe" placeholder="Contoh: Merah XL / Rasa Cokelat">
         </div>
         <div class="form-group">
           <label>Stok *:</label>
@@ -316,7 +323,7 @@
       </div>
 
       <div class="form-group">
-        <label>Foto Produk (Upload File atau URL):</label>
+        <label>Foto Produk (Upload / URL):</label>
         <div class="grid-2">
           <input type="file" id="p-foto-file" accept="image/*" onchange="previewUploadFoto(this)">
           <input type="text" id="p-foto-url" placeholder="atau paste URL Gambar..." oninput="previewUrlFoto(this.value)">
@@ -327,7 +334,7 @@
       </div>
 
       <div style="display: flex; gap: 8px;">
-        <button class="btn btn-primary" id="btn-simpan-produk" onclick="simpanProduk()">Simpan Produk</button>
+        <button class="btn btn-primary" id="btn-simpan-produk" onclick="simpanProduk()">Simpan ke Cloud</button>
         <button class="btn btn-secondary" onclick="resetFormProduk()">Reset Form</button>
       </div>
     </div>
@@ -354,7 +361,7 @@
     </div>
   </div>
 
-  <!-- TAB 3: LAPORAN & LABA -->
+  <!-- TAB 3: LAPORAN -->
   <div id="tab-laporan" class="tab-content no-print">
     <div class="card">
       <h2>Filter Laporan</h2>
@@ -375,23 +382,12 @@
 
     <div class="grid-2">
       <div class="card" style="border-left: 4px solid var(--primary);">
-        <small style="color: var(--text-muted); font-weight: bold;">TOTAL OMZET (PENJUALAN BERSIH)</small>
+        <small style="color: var(--text-muted); font-weight: bold;">TOTAL OMZET</small>
         <h1 style="color: var(--primary); font-size: 1.6rem; margin-top: 5px;">Rp <span id="rep-omzet">0</span></h1>
       </div>
       <div class="card" style="border-left: 4px solid var(--success);">
         <small style="color: var(--text-muted); font-weight: bold;">TOTAL LABA BERSIH</small>
         <h1 style="color: var(--success); font-size: 1.6rem; margin-top: 5px;">Rp <span id="rep-laba">0</span></h1>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="card" style="border-left: 4px solid var(--warning);">
-        <small style="color: var(--text-muted); font-weight: bold;">TOTAL HPP (MODAL BARANG TERJUAL)</small>
-        <h2 style="color: var(--warning); margin-top: 5px;">Rp <span id="rep-hpp">0</span></h2>
-      </div>
-      <div class="card" style="border-left: 4px solid var(--danger);">
-        <small style="color: var(--text-muted); font-weight: bold;">TOTAL DISKON DIBERIKAN</small>
-        <h2 style="color: var(--danger); margin-top: 5px;">Rp <span id="rep-diskon">0</span></h2>
       </div>
     </div>
 
@@ -418,29 +414,13 @@
         </table>
       </div>
     </div>
-
-    <div class="card">
-      <h2>Database System</h2>
-      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-        <button class="btn btn-success" onclick="exportData()">📥 Backup Data (JSON)</button>
-        <button class="btn btn-warning" onclick="document.getElementById('file-import').click()">📤 Restore Data (JSON)</button>
-        <input type="file" id="file-import" accept=".json" style="display: none;" onchange="importData(event)">
-        <button class="btn btn-danger" onclick="resetSystem()">⚠️ Reset All Data</button>
-      </div>
-    </div>
   </div>
 
   <!-- NAVIGASI BAWAH -->
   <nav class="no-print">
-    <button id="btn-tab-kasir" class="active" onclick="switchTab('kasir')">
-      <span>🛒</span> Kasir
-    </button>
-    <button id="btn-tab-produk" onclick="switchTab('produk')">
-      <span>📦</span> Produk
-    </button>
-    <button id="btn-tab-laporan" onclick="switchTab('laporan')">
-      <span>📊</span> Laporan
-    </button>
+    <button id="btn-tab-kasir" class="active" onclick="switchTab('kasir')"><span>🛒</span> Kasir</button>
+    <button id="btn-tab-produk" onclick="switchTab('produk')"><span>📦</span> Produk</button>
+    <button id="btn-tab-laporan" onclick="switchTab('laporan')"><span>📊</span> Laporan</button>
   </nav>
 
   <!-- MODAL STRUK -->
@@ -463,10 +443,8 @@
         <div class="struk-row"><span>Kembali:</span><span id="struk-kembali"></span></div>
         <div class="struk-footer">
           <p>Terima Kasih Telah Berbelanja!</p>
-          <p>KASIR JUNG SHOP</p>
         </div>
       </div>
-      
       <div class="no-print" style="margin-top: 15px; display: flex; gap: 8px;">
         <button class="btn btn-primary" style="flex: 1;" onclick="window.print()">🖨️ Cetak / PDF</button>
         <button class="btn btn-secondary" onclick="tutupStruk()">Tutup</button>
@@ -475,45 +453,59 @@
   </div>
 
   <script>
-    // State Data Storage
-    let produkList = JSON.parse(localStorage.getItem('jung_produk')) || [
-      {
-        id: 'PRD-001',
-        nama: 'Kopi Susu Gula Aren',
-        kategori: 'Minuman',
-        tipe: 'Dingin / 250ml',
-        hargaBeli: 6000,
-        hargaJual: 15000,
-        diskon: 0,
-        stok: 30,
-        foto: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?w=150'
-      },
-      {
-        id: 'PRD-002',
-        nama: 'Roti Bakar Cokelat',
-        kategori: 'Makanan',
-        tipe: 'Porsi Jumbo',
-        hargaBeli: 8000,
-        hargaJual: 18000,
-        diskon: 10,
-        stok: 15,
-        foto: 'https://images.unsplash.com/photo-1584776296944-ab6fb57b0bdd?w=150'
-      }
-    ];
+    // -------------------------------------------------------------
+    // 1. KONFIGURASI FIREBASE (Ganti dengan Key Akun Firebase Kamu)
+    // -------------------------------------------------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyDrwkztKSHmBuw2J5ygf4wQv4WxkCVJacY",
+  authDomain: "kasir-jung-shop.firebaseapp.com",
+  databaseURL: "https://kasir-jung-shop-default-rtdb.firebaseio.com",
+  projectId: "kasir-jung-shop",
+  storageBucket: "kasir-jung-shop.firebasestorage.app",
+  messagingSenderId: "989191859033",
+  appId: "1:989191859033:web:a85f8534dbf6a93dbe3a48",
+  measurementId: "G-0DEBRYX63R"
+    };
 
-    let transaksiList = JSON.parse(localStorage.getItem('jung_transaksi')) || [];
+    // Inisialisasi Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    
+    // Enable Offline Persistence
+    db.ref('.info/connected').on('value', (snap) => {
+      const statusEl = document.getElementById('cloud-status');
+      if (snap.val() === true) {
+        statusEl.innerText = '☁️ Cloud Connected';
+        statusEl.style.background = 'rgba(16, 185, 129, 0.3)';
+      } else {
+        statusEl.innerText = '📡 Offline Mode';
+        statusEl.style.background = 'rgba(239, 68, 68, 0.3)';
+      }
+    });
+
+    // Global State
+    let produkList = [];
+    let transaksiList = [];
     let keranjang = [];
     let chartInstance = null;
     let tempFotoBase64 = '';
 
-    function init() {
-      generateAutoId();
-      renderAll();
-    }
+    // Realtime Listener Firebase
+    function listenToDatabase() {
+      // Stream Data Produk
+      db.ref('produk').on('value', (snapshot) => {
+        const data = snapshot.val();
+        produkList = data ? Object.values(data) : [];
+        renderAll();
+      });
 
-    function simpanData() {
-      localStorage.setItem('jung_produk', JSON.stringify(produkList));
-      localStorage.setItem('jung_transaksi', JSON.stringify(transaksiList));
+      // Stream Data Transaksi
+      db.ref('transaksi').on('value', (snapshot) => {
+        const data = snapshot.val();
+        transaksiList = data ? Object.values(data) : [];
+        transaksiList.sort((a,b) => new Date(b.waktu) - new Date(a.waktu));
+        renderLaporan();
+      });
     }
 
     function generateAutoId() {
@@ -523,42 +515,33 @@
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('nav button').forEach(el => el.classList.remove('active'));
-      
       document.getElementById(`tab-${tabName}`).classList.add('active');
       document.getElementById(`btn-tab-${tabName}`).classList.add('active');
-      
       renderAll();
     }
 
     function renderAll() {
       updateKategoriDropdown();
       renderProdukKasir();
-      renderTabelKeranjang();
       renderTabelMasterProduk();
-      renderLaporan();
     }
 
     function updateKategoriDropdown() {
       const select = document.getElementById('filter-kategori');
       const kategoris = [...new Set(produkList.map(p => p.kategori).filter(Boolean))];
       select.innerHTML = '<option value="">Semua Kategori</option>';
-      kategoris.forEach(k => {
-        select.innerHTML += `<option value="${k}">${k}</option>`;
-      });
+      kategoris.forEach(k => select.innerHTML += `<option value="${k}">${k}</option>`);
     }
 
-    /* 1. KASIR & TRANSAKSI */
+    /* KASIR LOGIC */
     function renderProdukKasir() {
       const container = document.getElementById('daftar-produk-kasir');
       const search = document.getElementById('search-produk').value.toLowerCase();
       const kat = document.getElementById('filter-kategori').value;
 
       container.innerHTML = '';
-
       const filtered = produkList.filter(p => {
-        const matchSearch = p.nama.toLowerCase().includes(search) || 
-                            p.id.toLowerCase().includes(search) || 
-                            (p.tipe && p.tipe.toLowerCase().includes(search));
+        const matchSearch = p.nama.toLowerCase().includes(search) || p.id.toLowerCase().includes(search) || (p.tipe && p.tipe.toLowerCase().includes(search));
         const matchKat = kat === '' || p.kategori === kat;
         return matchSearch && matchKat;
       });
@@ -570,25 +553,17 @@
 
       filtered.forEach(p => {
         const hargaEfektif = p.hargaJual - (p.hargaJual * (p.diskon / 100));
-        let badgeClass = 'stok-aman';
-        if (p.stok <= 0) badgeClass = 'stok-habis';
-        else if (p.stok <= 5) badgeClass = 'stok-kritis';
-
+        let badgeClass = p.stok <= 0 ? 'stok-habis' : (p.stok <= 5 ? 'stok-kritis' : 'stok-aman');
         const defaultImg = 'https://via.placeholder.com/150?text=No+Image';
 
         container.innerHTML += `
           <div class="item-produk" onclick="tambahKeKeranjang('${p.id}')">
-            ${p.tipe ? `<span class="badge-type" title="${p.tipe}">${p.tipe}</span>` : ''}
+            ${p.tipe ? `<span class="badge-type">${p.tipe}</span>` : ''}
             <img src="${p.foto || defaultImg}" onerror="this.src='${defaultImg}'">
             <h4>${p.nama}</h4>
             <div class="id-badge">${p.id}</div>
-            <div class="price">
-              Rp ${hargaEfektif.toLocaleString()}
-              ${p.diskon > 0 ? `<small style="text-decoration: line-through; color:#94a3b8; font-size: 0.65rem;">Rp ${p.hargaJual.toLocaleString()}</small>` : ''}
-            </div>
-            <div style="margin-top: 4px;">
-              <span class="badge-stok ${badgeClass}">Stok: ${p.stok}</span>
-            </div>
+            <div class="price">Rp ${hargaEfektif.toLocaleString()}</div>
+            <div style="margin-top: 4px;"><span class="badge-stok ${badgeClass}">Stok: ${p.stok}</span></div>
           </div>
         `;
       });
@@ -597,26 +572,20 @@
     function tambahKeKeranjang(id) {
       const produk = produkList.find(p => p.id === id);
       if (!produk) return;
-      if (produk.stok <= 0) return alert('Stok produk telah habis!');
+      if (produk.stok <= 0) return alert('Stok produk habis!');
 
       const itemInCart = keranjang.find(k => k.id === id);
       if (itemInCart) {
-        if (itemInCart.qty < produk.stok) {
-          itemInCart.qty++;
-        } else {
-          alert('Stok tidak mencukupi!');
-        }
+        if (itemInCart.qty < produk.stok) itemInCart.qty++;
+        else alert('Stok tidak mencukupi!');
       } else {
         const hargaEfektif = produk.hargaJual - (produk.hargaJual * (produk.diskon / 100));
-        const diskonRpPerItem = produk.hargaJual * (produk.diskon / 100);
-
         keranjang.push({
           id: produk.id,
           nama: produk.nama + (produk.tipe ? ` (${produk.tipe})` : ''),
           hargaBeli: produk.hargaBeli,
           hargaJual: produk.hargaJual,
-          diskonPersen: produk.diskon,
-          diskonRp: diskonRpPerItem,
+          diskonRp: produk.hargaJual * (produk.diskon / 100),
           hargaEfektif: hargaEfektif,
           qty: 1
         });
@@ -627,27 +596,18 @@
     function renderTabelKeranjang() {
       const tbody = document.getElementById('tabel-keranjang');
       tbody.innerHTML = '';
-
-      let subtotal = 0;
-      let totalDiskonItem = 0;
+      let subtotal = 0, totalDiskonItem = 0;
 
       keranjang.forEach((item, index) => {
-        const totalItem = item.hargaEfektif * item.qty;
         subtotal += item.hargaJual * item.qty;
         totalDiskonItem += item.diskonRp * item.qty;
-
         tbody.innerHTML += `
           <tr>
-            <td>
-              <b>${item.nama}</b><br>
-              <small style="color: #64748b;">${item.id}</small>
-            </td>
+            <td><b>${item.nama}</b></td>
             <td>Rp ${item.hargaEfektif.toLocaleString()}</td>
-            <td>
-              <input type="number" min="1" value="${item.qty}" style="padding: 2px 4px; text-align: center;" onchange="updateQtyKeranjang(${index}, this.value)">
-            </td>
-            <td>Rp ${totalItem.toLocaleString()}</td>
-            <td><button class="btn btn-danger" style="padding: 2px 6px; font-size: 0.75rem;" onclick="hapusDariKeranjang(${index})">✕</button></td>
+            <td><input type="number" min="1" value="${item.qty}" style="padding:2px 4px; text-align:center;" onchange="updateQtyKeranjang(${index}, this.value)"></td>
+            <td>Rp ${(item.hargaEfektif * item.qty).toLocaleString()}</td>
+            <td><button class="btn btn-danger" style="padding:2px 6px;" onclick="hapusDariKeranjang(${index})">✕</button></td>
           </tr>
         `;
       });
@@ -657,19 +617,12 @@
       hitungKembalian();
     }
 
-    function updateQtyKeranjang(index, newQty) {
-      const qty = parseInt(newQty);
+    function updateQtyKeranjang(index, qtyVal) {
+      const qty = parseInt(qtyVal);
       if (isNaN(qty) || qty <= 0) return hapusDariKeranjang(index);
-
       const item = keranjang[index];
-      const produk = produkList.find(p => p.id === item.id);
-
-      if (qty > produk.stok) {
-        alert('Stok tidak mencukupi!');
-        renderTabelKeranjang();
-        return;
-      }
-
+      const p = produkList.find(prod => prod.id === item.id);
+      if (qty > p.stok) { alert('Stok melebihi batas!'); renderTabelKeranjang(); return; }
       item.qty = qty;
       renderTabelKeranjang();
     }
@@ -680,189 +633,93 @@
     }
 
     function hitungKembalian() {
-      let subtotalNet = keranjang.reduce((sum, item) => sum + (item.hargaEfektif * item.qty), 0);
-      
-      const diskonVal = parseFloat(document.getElementById('input-diskon-nilai').value) || 0;
-      const diskonTipe = document.getElementById('input-diskon-tipe').value;
+      let net = keranjang.reduce((sum, item) => sum + (item.hargaEfektif * item.qty), 0);
+      const val = parseFloat(document.getElementById('input-diskon-nilai').value) || 0;
+      const tipe = document.getElementById('input-diskon-tipe').value;
+      let diskonTambahan = tipe === '%' ? net * (val / 100) : val;
 
-      let diskonTambahan = 0;
-      if (diskonTipe === '%') {
-        diskonTambahan = subtotalNet * (diskonVal / 100);
-      } else {
-        diskonTambahan = diskonVal;
-      }
-
-      const totalAkhir = Math.max(0, subtotalNet - diskonTambahan);
-      document.getElementById('text-total').innerText = totalAkhir.toLocaleString();
+      const total = Math.max(0, net - diskonTambahan);
+      document.getElementById('text-total').innerText = total.toLocaleString();
 
       const bayar = parseFloat(document.getElementById('input-bayar').value) || 0;
-      const kembalian = bayar - totalAkhir;
-      document.getElementById('text-kembalian').innerText = (kembalian >= 0 ? kembalian : 0).toLocaleString();
+      document.getElementById('text-kembalian').innerText = Math.max(0, bayar - total).toLocaleString();
     }
 
     function prosesTransaksi() {
-      if (keranjang.length === 0) return alert('Keranjang belanjaan masih kosong!');
+      if (keranjang.length === 0) return alert('Keranjang masih kosong!');
 
+      let net = keranjang.reduce((sum, item) => sum + (item.hargaEfektif * item.qty), 0);
       let subtotalOriginal = keranjang.reduce((sum, item) => sum + (item.hargaJual * item.qty), 0);
-      let subtotalNet = keranjang.reduce((sum, item) => sum + (item.hargaEfektif * item.qty), 0);
-      let diskonItemTotal = keranjang.reduce((sum, item) => sum + (item.diskonRp * item.qty), 0);
       let totalHPP = keranjang.reduce((sum, item) => sum + (item.hargaBeli * item.qty), 0);
+      let diskonItemTotal = keranjang.reduce((sum, item) => sum + (item.diskonRp * item.qty), 0);
 
-      const diskonVal = parseFloat(document.getElementById('input-diskon-nilai').value) || 0;
-      const diskonTipe = document.getElementById('input-diskon-tipe').value;
+      const val = parseFloat(document.getElementById('input-diskon-nilai').value) || 0;
+      const tipe = document.getElementById('input-diskon-tipe').value;
+      let diskonTambahan = tipe === '%' ? net * (val / 100) : val;
 
-      let diskonTambahan = 0;
-      if (diskonTipe === '%') {
-        diskonTambahan = subtotalNet * (diskonVal / 100);
-      } else {
-        diskonTambahan = diskonVal;
-      }
-
-      const totalAkhir = Math.max(0, subtotalNet - diskonTambahan);
-      const totalDiskonSeluruh = diskonItemTotal + diskonTambahan;
-
+      const totalAkhir = Math.max(0, net - diskonTambahan);
       const bayar = parseFloat(document.getElementById('input-bayar').value) || 0;
-      if (bayar < totalAkhir) return alert('Nominal pembayaran kurang!');
+      if (bayar < totalAkhir) return alert('Uang pembayaran kurang!');
 
-      const kembalian = bayar - totalAkhir;
-      const metode = document.getElementById('select-metode').value;
-      const waktu = new Date().toLocaleString('id-ID');
-      const isoDate = new Date().toISOString().split('T')[0];
-
-      // Potong Stok Produk
-      keranjang.forEach(item => {
-        const p = produkList.find(prod => prod.id === item.id);
-        if (p) p.stok -= item.qty;
-      });
-
+      const trxId = 'TRX-' + Date.now();
       const transaksi = {
-        id: 'TRX-' + Date.now(),
-        waktu,
-        tanggalISO: isoDate,
-        items: [...keranjang],
+        id: trxId,
+        waktu: new Date().toLocaleString('id-ID'),
+        tanggalISO: new Date().toISOString().split('T')[0],
+        items: keranjang,
         subtotal: subtotalOriginal,
-        diskonTotal: totalDiskonSeluruh,
+        diskonTotal: diskonItemTotal + diskonTambahan,
         total: totalAkhir,
         hpp: totalHPP,
         laba: totalAkhir - totalHPP,
         bayar,
-        kembalian,
-        metode
+        kembalian: bayar - totalAkhir,
+        metode: document.getElementById('select-metode').value
       };
 
-      transaksiList.unshift(transaksi);
-      simpanData();
-
-      tampilkanStruk(transaksi);
-
-      // Reset Form
-      keranjang = [];
-      document.getElementById('input-bayar').value = '';
-      document.getElementById('input-diskon-nilai').value = '0';
-      renderAll();
-    }
-
-    /* 2. STRUK */
-    function tampilkanStruk(trx) {
-      document.getElementById('struk-waktu').innerText = trx.waktu;
-      document.getElementById('struk-id').innerText = 'ID: ' + trx.id;
-
-      const itemsContainer = document.getElementById('struk-items');
-      itemsContainer.innerHTML = '';
-
-      trx.items.forEach(item => {
-        itemsContainer.innerHTML += `
-          <div class="struk-row">
-            <span>${item.nama} (${item.qty}x)</span>
-            <span>Rp ${(item.hargaEfektif * item.qty).toLocaleString()}</span>
-          </div>
-        `;
+      // Potong Stok di Firebase
+      keranjang.forEach(item => {
+        const p = produkList.find(prod => prod.id === item.id);
+        if (p) db.ref('produk/' + p.id + '/stok').set(p.stok - item.qty);
       });
 
-      document.getElementById('struk-subtotal').innerText = `Rp ${trx.subtotal.toLocaleString()}`;
-      document.getElementById('struk-diskon').innerText = `-Rp ${trx.diskonTotal.toLocaleString()}`;
-      document.getElementById('struk-total').innerText = `Rp ${trx.total.toLocaleString()}`;
-      document.getElementById('struk-metode').innerText = trx.metode;
-      document.getElementById('struk-bayar').innerText = `Rp ${trx.bayar.toLocaleString()}`;
-      document.getElementById('struk-kembali').innerText = `Rp ${trx.kembalian.toLocaleString()}`;
-
-      document.getElementById('modal-struk').classList.add('active');
+      // Simpan Transaksi ke Firebase Cloud
+      db.ref('transaksi/' + trxId).set(transaksi).then(() => {
+        tampilkanStruk(transaksi);
+        keranjang = [];
+        document.getElementById('input-bayar').value = '';
+        renderTabelKeranjang();
+      });
     }
 
-    function tutupStruk() {
-      document.getElementById('modal-struk').classList.remove('active');
-    }
-
-    /* 3. MANAJEMEN PRODUK */
-    function previewUploadFoto(input) {
-      if (input.files && input.files[0]) {
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          tempFotoBase64 = e.target.result;
-          document.getElementById('foto-preview').src = tempFotoBase64;
-          document.getElementById('foto-preview-container').style.display = 'block';
-        }
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-
-    function previewUrlFoto(url) {
-      if(url.trim() !== '') {
-        tempFotoBase64 = url;
-        document.getElementById('foto-preview').src = url;
-        document.getElementById('foto-preview-container').style.display = 'block';
-      }
-    }
-
+    /* FIREBASE PRODUK MANAGEMENT */
     function simpanProduk() {
       const editId = document.getElementById('edit-produk-id').value;
       const id = document.getElementById('p-id').value;
       const nama = document.getElementById('p-nama').value.trim();
       const kategori = document.getElementById('p-kategori').value.trim() || 'Umum';
-      const tipe = document.getElementById('p-tipe').value.trim(); // Input Manual
+      const tipe = document.getElementById('p-tipe').value.trim();
       const stok = parseInt(document.getElementById('p-stok').value);
       const hargaBeli = parseFloat(document.getElementById('p-harga-beli').value);
       const hargaJual = parseFloat(document.getElementById('p-harga-jual').value);
       const diskon = parseFloat(document.getElementById('p-diskon').value) || 0;
 
-      if (!nama || isNaN(stok) || isNaN(hargaBeli) || isNaN(hargaJual)) {
-        return alert('Harap isi Nama, Stok, Harga Beli, dan Harga Jual!');
-      }
+      if (!nama || isNaN(stok) || isNaN(hargaBeli) || isNaN(hargaJual)) return alert('Harap lengkapi semua data wajib!');
 
       const fotoData = tempFotoBase64 || document.getElementById('p-foto-url').value;
+      const targetId = editId || id;
 
-      if (editId) {
-        // Mode Edit
-        const p = produkList.find(item => item.id === editId);
-        if (p) {
-          p.nama = nama;
-          p.kategori = kategori;
-          p.tipe = tipe;
-          p.stok = stok;
-          p.hargaBeli = hargaBeli;
-          p.hargaJual = hargaJual;
-          p.diskon = diskon;
-          if (fotoData) p.foto = fotoData;
-        }
-      } else {
-        // Mode Tambah
-        produkList.push({
-          id,
-          nama,
-          kategori,
-          tipe,
-          hargaBeli,
-          hargaJual,
-          diskon,
-          stok,
-          foto: fotoData
-        });
-      }
+      const payload = { id: targetId, nama, kategori, tipe, stok, hargaBeli, hargaJual, diskon, foto: fotoData };
 
-      simpanData();
-      resetFormProduk();
-      renderAll();
-      alert('Data produk berhasil disimpan!');
+      // Push / Update ke Firebase
+      db.ref('produk/' + targetId).set(payload).then(() => {
+        alert('Produk berhasil disimpan ke Cloud Firebase!');
+        resetFormProduk();
+      });
+    }
+
+    function hapusProduk(id) {
+      if (confirm(`Hapus produk ${id}?`)) db.ref('produk/' + id).remove();
     }
 
     function editProduk(id) {
@@ -879,13 +736,12 @@
       document.getElementById('p-harga-beli').value = p.hargaBeli;
       document.getElementById('p-harga-jual').value = p.hargaJual;
       document.getElementById('p-diskon').value = p.diskon;
-      
+
       if(p.foto) {
         tempFotoBase64 = p.foto;
         document.getElementById('foto-preview').src = p.foto;
         document.getElementById('foto-preview-container').style.display = 'block';
       }
-
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -906,91 +762,79 @@
       generateAutoId();
     }
 
-    function hapusProduk(id) {
-      if (confirm(`Yakin ingin menghapus produk ${id}?`)) {
-        produkList = produkList.filter(p => p.id !== id);
-        simpanData();
-        renderAll();
+    function previewUploadFoto(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          tempFotoBase64 = e.target.result;
+          document.getElementById('foto-preview').src = tempFotoBase64;
+          document.getElementById('foto-preview-container').style.display = 'block';
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function previewUrlFoto(url) {
+      if (url.trim() !== '') {
+        tempFotoBase64 = url;
+        document.getElementById('foto-preview').src = url;
+        document.getElementById('foto-preview-container').style.display = 'block';
       }
     }
 
     function renderTabelMasterProduk() {
       const tbody = document.getElementById('tabel-produk-master');
       tbody.innerHTML = '';
-
       produkList.forEach(p => {
         const defaultImg = 'https://via.placeholder.com/50?text=No+Img';
         tbody.innerHTML += `
           <tr>
-            <td><img src="${p.foto || defaultImg}" style="width:40px; height:40px; object-fit:cover; border-radius:4px;" onerror="this.src='${defaultImg}'"></td>
-            <td>
-              <b>${p.nama}</b><br>
-              <small style="color:#64748b;">${p.id}</small>
-            </td>
-            <td>
-              ${p.tipe ? `<span style="font-size:0.75rem; background:#e2e8f0; padding:2px 5px; border-radius:4px;">${p.tipe}</span><br>` : ''}
-              <small style="color:#64748b;">${p.kategori}</small>
-            </td>
+            <td><img src="${p.foto || defaultImg}" style="width:40px; height:40px; object-fit:cover;" onerror="this.src='${defaultImg}'"></td>
+            <td><b>${p.nama}</b><br><small style="color:#64748b;">${p.id}</small></td>
+            <td>${p.tipe ? `<span style="font-size:0.75rem; background:#e2e8f0; padding:2px 5px; border-radius:4px;">${p.tipe}</span><br>` : ''}<small style="color:#64748b;">${p.kategori}</small></td>
             <td>Rp ${p.hargaBeli.toLocaleString()}</td>
             <td>Rp ${p.hargaJual.toLocaleString()}</td>
             <td>${p.diskon}%</td>
             <td><b>${p.stok}</b></td>
             <td>
-              <button class="btn btn-warning" style="padding: 2px 6px; font-size:0.75rem;" onclick="editProduk('${p.id}')">Edit</button>
-              <button class="btn btn-danger" style="padding: 2px 6px; font-size:0.75rem;" onclick="hapusProduk('${p.id}')">Hapus</button>
+              <button class="btn btn-warning" style="padding:2px 6px;" onclick="editProduk('${p.id}')">Edit</button>
+              <button class="btn btn-danger" style="padding:2px 6px;" onclick="hapusProduk('${p.id}')">Hapus</button>
             </td>
           </tr>
         `;
       });
     }
 
-    /* 4. LAPORAN & LABA BERSIH */
+    /* LAPORAN LOGIC */
     function renderLaporan() {
       const tglMulai = document.getElementById('filter-tgl-mulai').value;
       const tglSelesai = document.getElementById('filter-tgl-selesai').value;
 
       let list = [...transaksiList];
+      if (tglMulai) list = list.filter(t => t.tanggalISO >= tglMulai);
+      if (tglSelesai) list = list.filter(t => t.tanggalISO <= tglSelesai);
 
-      if (tglMulai) {
-        list = list.filter(t => t.tanggalISO >= tglMulai);
-      }
-      if (tglSelesai) {
-        list = list.filter(t => t.tanggalISO <= tglSelesai);
-      }
-
-      let totalOmzet = 0;
-      let totalLaba = 0;
-      let totalHpp = 0;
-      let totalDiskon = 0;
-
+      let omzet = 0, laba = 0;
       const tbody = document.getElementById('tabel-riwayat');
       tbody.innerHTML = '';
 
       list.forEach(t => {
-        totalOmzet += t.total;
-        totalLaba += t.laba;
-        totalHpp += t.hpp;
-        totalDiskon += t.diskonTotal;
-
+        omzet += t.total;
+        laba += t.laba;
         tbody.innerHTML += `
           <tr>
             <td><small>${t.id}</small></td>
             <td>${t.waktu}</td>
             <td>${t.metode}</td>
             <td>Rp ${t.total.toLocaleString()}</td>
-            <td style="color: var(--success); font-weight:bold;">Rp ${t.laba.toLocaleString()}</td>
-            <td>
-              <button class="btn btn-secondary" style="padding:2px 6px; font-size:0.75rem;" onclick='tampilkanStruk(${JSON.stringify(t)})'>Struk</button>
-            </td>
+            <td style="color:var(--success); font-weight:bold;">Rp ${t.laba.toLocaleString()}</td>
+            <td><button class="btn btn-secondary" style="padding:2px 6px;" onclick='tampilkanStruk(${JSON.stringify(t)})'>Struk</button></td>
           </tr>
         `;
       });
 
-      document.getElementById('rep-omzet').innerText = totalOmzet.toLocaleString();
-      document.getElementById('rep-laba').innerText = totalLaba.toLocaleString();
-      document.getElementById('rep-hpp').innerText = totalHpp.toLocaleString();
-      document.getElementById('rep-diskon').innerText = totalDiskon.toLocaleString();
-
+      document.getElementById('rep-omzet').innerText = omzet.toLocaleString();
+      document.getElementById('rep-laba').innerText = laba.toLocaleString();
       renderChart(list);
     }
 
@@ -1002,100 +846,55 @@
 
     function renderChart(listData) {
       const ctx = document.getElementById('chartLaporan').getContext('2d');
-      
       const grouped = {};
       [...listData].reverse().forEach(t => {
-        const dateKey = t.tanggalISO || t.waktu.split(' ')[0];
-        if (!grouped[dateKey]) {
-          grouped[dateKey] = { omzet: 0, laba: 0 };
-        }
-        grouped[dateKey].omzet += t.total;
-        grouped[dateKey].laba += t.laba;
+        const key = t.tanggalISO || t.waktu.split(' ')[0];
+        if (!grouped[key]) grouped[key] = { omzet: 0, laba: 0 };
+        grouped[key].omzet += t.total;
+        grouped[key].laba += t.laba;
       });
 
       const labels = Object.keys(grouped);
-      const dataOmzet = labels.map(k => grouped[k].omzet);
-      const dataLaba = labels.map(k => grouped[k].laba);
-
       if (chartInstance) chartInstance.destroy();
 
       chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: labels,
+          labels,
           datasets: [
-            {
-              label: 'Omzet Penjualan (Rp)',
-              data: dataOmzet,
-              borderColor: '#2563eb',
-              backgroundColor: 'rgba(37, 99, 235, 0.1)',
-              fill: true,
-              tension: 0.3
-            },
-            {
-              label: 'Laba Bersih (Rp)',
-              data: dataLaba,
-              borderColor: '#10b981',
-              backgroundColor: 'rgba(16, 185, 129, 0.1)',
-              fill: true,
-              tension: 0.3
-            }
+            { label: 'Omzet (Rp)', data: labels.map(k => grouped[k].omzet), borderColor: '#2563eb', fill: false },
+            { label: 'Laba (Rp)', data: labels.map(k => grouped[k].laba), borderColor: '#10b981', fill: false }
           ]
         },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { position: 'top' }
-          }
-        }
+        options: { responsive: true }
       });
     }
 
-    /* BACKUP & RESTORE DATA */
-    function exportData() {
-      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({
-        produk: produkList,
-        transaksi: transaksiList
-      }));
-      const downloadAnchor = document.createElement('a');
-      downloadAnchor.setAttribute("href", dataStr);
-      downloadAnchor.setAttribute("download", `backup_kasir_jung_shop_${new Date().toISOString().split('T')[0]}.json`);
-      document.body.appendChild(downloadAnchor);
-      downloadAnchor.click();
-      downloadAnchor.remove();
+    /* STRUK MODAL */
+    function tampilkanStruk(trx) {
+      document.getElementById('struk-waktu').innerText = trx.waktu;
+      document.getElementById('struk-id').innerText = 'ID: ' + trx.id;
+      const itemsContainer = document.getElementById('struk-items');
+      itemsContainer.innerHTML = '';
+      trx.items.forEach(item => {
+        itemsContainer.innerHTML += `<div class="struk-row"><span>${item.nama} (${item.qty}x)</span><span>Rp ${(item.hargaEfektif * item.qty).toLocaleString()}</span></div>`;
+      });
+      document.getElementById('struk-subtotal').innerText = `Rp ${trx.subtotal.toLocaleString()}`;
+      document.getElementById('struk-diskon').innerText = `-Rp ${trx.diskonTotal.toLocaleString()}`;
+      document.getElementById('struk-total').innerText = `Rp ${trx.total.toLocaleString()}`;
+      document.getElementById('struk-metode').innerText = trx.metode;
+      document.getElementById('struk-bayar').innerText = `Rp ${trx.bayar.toLocaleString()}`;
+      document.getElementById('struk-kembali').innerText = `Rp ${trx.kembalian.toLocaleString()}`;
+      document.getElementById('modal-struk').classList.add('active');
     }
 
-    function importData(event) {
-      const fileReader = new FileReader();
-      fileReader.onload = function(e) {
-        try {
-          const parsed = JSON.parse(e.target.result);
-          if (parsed.produk && parsed.transaksi) {
-            produkList = parsed.produk;
-            transaksiList = parsed.transaksi;
-            simpanData();
-            renderAll();
-            alert('Restore data berhasil!');
-          } else {
-            alert('Format file JSON tidak valid!');
-          }
-        } catch (err) {
-          alert('Gagal membaca file JSON!');
-        }
-      };
-      fileReader.readAsText(event.target.files[0]);
+    function tutupStruk() {
+      document.getElementById('modal-struk').classList.remove('active');
     }
 
-    function resetSystem() {
-      if (confirm('PERINGATAN: Seluruh data produk dan transaksi akan dihapus. Lanjutkan?')) {
-        localStorage.removeItem('jung_produk');
-        localStorage.removeItem('jung_transaksi');
-        location.reload();
-      }
-    }
-
-    // Jalankan aplikasi
-    init();
+    // Start App
+    generateAutoId();
+    listenToDatabase();
   </script>
 </body>
 </html>
