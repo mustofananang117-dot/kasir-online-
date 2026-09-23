@@ -138,11 +138,15 @@
       position: absolute;
       top: 5px;
       left: 5px;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.65);
       color: white;
       font-size: 0.6rem;
       padding: 2px 5px;
       border-radius: 4px;
+      max-width: 90%;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .badge-stok {
@@ -196,7 +200,7 @@
     <div class="grid-2" style="grid-template-columns: 1fr; gap: 10px;">
       <div class="card">
         <div class="grid-2" style="margin-bottom: 10px;">
-          <input type="text" id="search-produk" placeholder="🔍 Cari Nama / ID Produk..." oninput="renderProdukKasir()">
+          <input type="text" id="search-produk" placeholder="🔍 Cari Nama / ID / Varian..." oninput="renderProdukKasir()">
           <select id="filter-kategori" onchange="renderProdukKasir()">
             <option value="">Semua Kategori</option>
           </select>
@@ -284,16 +288,11 @@
       <div class="grid-3">
         <div class="form-group">
           <label>Kategori:</label>
-          <input type="text" id="p-kategori" placeholder="Umum/Makanan/dll">
+          <input type="text" id="p-kategori" placeholder="Umum/Makanan/Baju">
         </div>
         <div class="form-group">
-          <label>Tipe / Mode:</label>
-          <select id="p-tipe">
-            <option value="Barang Jadi">Barang Jadi</option>
-            <option value="Bahan Baku">Bahan Baku</option>
-            <option value="Jasa">Jasa</option>
-            <option value="Digital">Digital</option>
-          </select>
+          <label>Tipe / Varian (Ketik Manual):</label>
+          <input type="text" id="p-tipe" placeholder="Contoh: Merah XL / Rasa Cokelat / 250ml">
         </div>
         <div class="form-group">
           <label>Stok *:</label>
@@ -341,7 +340,7 @@
             <tr>
               <th>Foto</th>
               <th>ID & Nama</th>
-              <th>Tipe & Kategori</th>
+              <th>Varian & Kategori</th>
               <th>Harga Beli</th>
               <th>Harga Jual</th>
               <th>Diskon</th>
@@ -482,7 +481,7 @@
         id: 'PRD-001',
         nama: 'Kopi Susu Gula Aren',
         kategori: 'Minuman',
-        tipe: 'Barang Jadi',
+        tipe: 'Dingin / 250ml',
         hargaBeli: 6000,
         hargaJual: 15000,
         diskon: 0,
@@ -493,7 +492,7 @@
         id: 'PRD-002',
         nama: 'Roti Bakar Cokelat',
         kategori: 'Makanan',
-        tipe: 'Barang Jadi',
+        tipe: 'Porsi Jumbo',
         hargaBeli: 8000,
         hargaJual: 18000,
         diskon: 10,
@@ -557,7 +556,9 @@
       container.innerHTML = '';
 
       const filtered = produkList.filter(p => {
-        const matchSearch = p.nama.toLowerCase().includes(search) || p.id.toLowerCase().includes(search);
+        const matchSearch = p.nama.toLowerCase().includes(search) || 
+                            p.id.toLowerCase().includes(search) || 
+                            (p.tipe && p.tipe.toLowerCase().includes(search));
         const matchKat = kat === '' || p.kategori === kat;
         return matchSearch && matchKat;
       });
@@ -577,7 +578,7 @@
 
         container.innerHTML += `
           <div class="item-produk" onclick="tambahKeKeranjang('${p.id}')">
-            <span class="badge-type">${p.tipe || 'Barang'}</span>
+            ${p.tipe ? `<span class="badge-type" title="${p.tipe}">${p.tipe}</span>` : ''}
             <img src="${p.foto || defaultImg}" onerror="this.src='${defaultImg}'">
             <h4>${p.nama}</h4>
             <div class="id-badge">${p.id}</div>
@@ -611,7 +612,7 @@
 
         keranjang.push({
           id: produk.id,
-          nama: produk.nama,
+          nama: produk.nama + (produk.tipe ? ` (${produk.tipe})` : ''),
           hargaBeli: produk.hargaBeli,
           hargaJual: produk.hargaJual,
           diskonPersen: produk.diskon,
@@ -754,7 +755,7 @@
 
       tampilkanStruk(transaksi);
 
-      // Reset
+      // Reset Form
       keranjang = [];
       document.getElementById('input-bayar').value = '';
       document.getElementById('input-diskon-nilai').value = '0';
@@ -818,7 +819,7 @@
       const id = document.getElementById('p-id').value;
       const nama = document.getElementById('p-nama').value.trim();
       const kategori = document.getElementById('p-kategori').value.trim() || 'Umum';
-      const tipe = document.getElementById('p-tipe').value;
+      const tipe = document.getElementById('p-tipe').value.trim(); // Input Manual
       const stok = parseInt(document.getElementById('p-stok').value);
       const hargaBeli = parseFloat(document.getElementById('p-harga-beli').value);
       const hargaJual = parseFloat(document.getElementById('p-harga-jual').value);
@@ -873,7 +874,7 @@
       document.getElementById('p-id').value = p.id;
       document.getElementById('p-nama').value = p.nama;
       document.getElementById('p-kategori').value = p.kategori;
-      document.getElementById('p-tipe').value = p.tipe || 'Barang Jadi';
+      document.getElementById('p-tipe').value = p.tipe || '';
       document.getElementById('p-stok').value = p.stok;
       document.getElementById('p-harga-beli').value = p.hargaBeli;
       document.getElementById('p-harga-jual').value = p.hargaJual;
@@ -893,6 +894,7 @@
       document.getElementById('edit-produk-id').value = '';
       document.getElementById('p-nama').value = '';
       document.getElementById('p-kategori').value = '';
+      document.getElementById('p-tipe').value = '';
       document.getElementById('p-stok').value = '';
       document.getElementById('p-harga-beli').value = '';
       document.getElementById('p-harga-jual').value = '';
@@ -926,7 +928,7 @@
               <small style="color:#64748b;">${p.id}</small>
             </td>
             <td>
-              <span style="font-size:0.75rem; background:#e2e8f0; padding:2px 5px; border-radius:4px;">${p.tipe || 'Barang'}</span><br>
+              ${p.tipe ? `<span style="font-size:0.75rem; background:#e2e8f0; padding:2px 5px; border-radius:4px;">${p.tipe}</span><br>` : ''}
               <small style="color:#64748b;">${p.kategori}</small>
             </td>
             <td>Rp ${p.hargaBeli.toLocaleString()}</td>
@@ -1001,7 +1003,6 @@
     function renderChart(listData) {
       const ctx = document.getElementById('chartLaporan').getContext('2d');
       
-      // Grouping by Tanggal
       const grouped = {};
       [...listData].reverse().forEach(t => {
         const dateKey = t.tanggalISO || t.waktu.split(' ')[0];
