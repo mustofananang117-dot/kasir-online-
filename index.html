@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>JUNG SHOP - Aplikasi Kasir & Manajemen Toko Cloud</title>
-
+  <title>GyroPOS Pro - Aplikasi Kasir & Manajemen Toko Cloud</title>
+  
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Firebase SDK -->
@@ -13,7 +13,7 @@
 
   <style>
     :root {
-      --primary: #10b981; /* Tema JUNG SHOP Emerald */
+      --primary: #10b981;
       --primary-dark: #059669;
       --secondary: #2563eb;
       --success: #10b981;
@@ -91,7 +91,6 @@
     }
     h2 { font-size: 1.05rem; margin-bottom: 0.8rem; color: #0f172a; border-bottom: 2px solid #f1f5f9; padding-bottom: 0.4rem; display: flex; justify-content: space-between; align-items: center; }
 
-    /* ALERT BANNER */
     .alert-banner {
       background: #fffbebf8;
       border: 1px solid #fcd34d;
@@ -108,7 +107,7 @@
 
     .form-group { margin-bottom: 10px; text-align: left; }
     .form-group label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 4px; color: #475569; }
-
+    
     input, button, select, textarea {
       width: 100%;
       padding: 9px 12px;
@@ -130,7 +129,6 @@
     .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
 
-    /* PRODUK GRID (POS VIEW) */
     .grid-produk {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -163,7 +161,7 @@
     }
     .item-produk h4 { font-size: 0.82rem; margin-bottom: 2px; line-height: 1.2; height: 2rem; overflow: hidden; }
     .item-produk .price { font-size: 0.85rem; color: var(--primary-dark); font-weight: bold; }
-
+    
     .badge-stok { font-size: 0.68rem; padding: 2px 5px; border-radius: 4px; font-weight: 600; display: inline-block; }
     .stok-aman { background: #dcfce7; color: #166534; }
     .stok-kritis { background: #fef3c7; color: #92400e; }
@@ -179,7 +177,7 @@
 
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 100; justify-content: center; align-items: center; padding: 15px; }
     .modal.active { display: flex; }
-    .modal-content { background: white; padding: 18px; border-radius: 12px; width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
+    .modal-content { background: white; padding: 18px; border-radius: 12px; width: 100%; max-width: 450px; max-height: 90vh; overflow-y: auto; }
 
     .struk-box { font-family: 'Courier New', Courier, monospace; font-size: 0.78rem; line-height: 1.3; }
     .struk-header { text-align: center; margin-bottom: 10px; border-bottom: 1px dashed #000; padding-bottom: 5px; }
@@ -197,7 +195,7 @@
 <body>
 
   <header class="no-print">
-    <span>JUNG SHOP <small style="font-size:0.65rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:8px;">PRO</small></span>
+    <span>GyroPOS <small style="font-size:0.65rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:8px;">PRO</small></span>
     <div class="header-user-info">
       <span class="status-badge" id="cloud-status">☁️ Online</span>
     </div>
@@ -310,7 +308,7 @@
     <div class="card">
       <h2 id="form-produk-title">Tambah / Edit Produk</h2>
       <input type="hidden" id="edit-produk-id">
-
+      
       <div class="grid-2">
         <div class="form-group">
           <label>ID / Kode Barang (Auto):</label>
@@ -391,7 +389,91 @@
     </div>
   </div>
 
-  <!-- TAB 3: LAPORAN & KEUANGAN -->
+  <!-- TAB 3: MENU KELOLA TRANSAKSI (TAMBAH/KURANG/EDIT CUSTOM TANGGAL) -->
+  <div id="tab-transaksi" class="tab-content no-print">
+    <div class="card">
+      <h2>📝 Form Transaksi Manual / Backdate</h2>
+      <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 12px;">Gunakan menu ini untuk menambahkan transaksi penjualan pada tanggal/waktu yang diinginkan secara khusus.</p>
+      
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Tanggal & Waktu Transaksi *:</label>
+          <input type="datetime-local" id="manual-waktu">
+        </div>
+        <div class="form-group">
+          <label>Metode Pembayaran:</label>
+          <select id="manual-metode">
+            <option value="Tunai">Tunai</option>
+            <option value="QRIS">QRIS</option>
+            <option value="Transfer Bank">Transfer Bank</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card" style="background: #f8fafc; border: 1px dashed var(--border);">
+        <h3 style="font-size: 0.9rem; margin-bottom: 8px;">Pilih Produk untuk Transaksi Ini:</h3>
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Produk:</label>
+            <select id="manual-select-produk"></select>
+          </div>
+          <div class="form-group">
+            <label>Jumlah (Qty):</label>
+            <input type="number" id="manual-qty" value="1" min="1">
+          </div>
+          <div class="form-group" style="display: flex; align-items: flex-end;">
+            <button class="btn btn-secondary" onclick="tambahItemManual()">+ Tambah ke Daftar</button>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto; margin-top: 10px;">
+          <table>
+            <thead>
+              <tr>
+                <th>Produk</th>
+                <th>Qty</th>
+                <th>Harga Jual</th>
+                <th>Total</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="manual-tabel-item"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label>Jumlah Pembayaran (Rp):</label>
+          <input type="number" id="manual-bayar" placeholder="0">
+        </div>
+        <div class="form-group" style="display: flex; align-items: flex-end;">
+          <button class="btn btn-primary" onclick="simpanTransaksiManual()" style="padding: 10px; font-size: 0.9rem;">💾 Simpan Transaksi Manual</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Daftar Semua Transaksi</h2>
+      <div style="overflow-x: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>ID Transaksi</th>
+              <th>Tanggal & Waktu</th>
+              <th>Metode</th>
+              <th>Total Transaksi</th>
+              <th>Keuntungan (Laba)</th>
+              <th>Aksi Pengelolaan</th>
+            </tr>
+          </thead>
+          <tbody id="tabel-kelola-transaksi"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: LAPORAN & KEUANGAN -->
   <div id="tab-laporan" class="tab-content no-print">
     <div class="card">
       <h2>Filter & Opsi Laporan</h2>
@@ -426,7 +508,6 @@
     </div>
 
     <div class="grid-2">
-      <!-- FORM BIAYA OPERASIONAL -->
       <div class="card">
         <h2>Catat Pengeluaran Operasional</h2>
         <div class="form-group">
@@ -493,15 +574,48 @@
   <nav class="no-print">
     <button id="btn-tab-kasir" class="active" onclick="switchTab('kasir')"><span>🛒</span> Kasir</button>
     <button id="btn-tab-produk" onclick="switchTab('produk')"><span>📦</span> Produk</button>
+    <button id="btn-tab-transaksi" onclick="switchTab('transaksi')"><span>📝</span> Transaksi</button>
     <button id="btn-tab-laporan" onclick="switchTab('laporan')"><span>📊</span> Laporan</button>
   </nav>
+
+  <!-- MODAL EDIT WAKTU TRANSAKSI -->
+  <div id="modal-edit-trx" class="modal">
+    <div class="modal-content">
+      <h2>Edit Detail Transaksi</h2>
+      <input type="hidden" id="edit-trx-id">
+      
+      <div class="form-group">
+        <label>Tanggal & Waktu Baru:</label>
+        <input type="datetime-local" id="edit-trx-waktu">
+      </div>
+
+      <div class="form-group">
+        <label>Metode Pembayaran:</label>
+        <select id="edit-trx-metode">
+          <option value="Tunai">Tunai</option>
+          <option value="QRIS">QRIS</option>
+          <option value="Transfer Bank">Transfer Bank</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Nominal Bayar (Rp):</label>
+        <input type="number" id="edit-trx-bayar">
+      </div>
+
+      <div style="display: flex; gap: 8px; margin-top: 15px;">
+        <button class="btn btn-primary" style="flex: 1;" onclick="simpanEditTransaksi()">Simpan Perubahan</button>
+        <button class="btn btn-secondary" onclick="tutupModalEditTrx()">Batal</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL STRUK CETAK -->
   <div id="modal-struk" class="modal">
     <div class="modal-content">
       <div id="area-struk" class="struk-box">
         <div class="struk-header">
-          <h3 style="font-size: 1.1rem; font-weight: bold;">JUNG SHOP - Toko Ku</h3>
+          <h3 style="font-size: 1.1rem; font-weight: bold;">GyroPOS - Toko Ku</h3>
           <p>Jl. Niaga Utama No. 12</p>
           <p>Telp/WA: 0812-3456-7890</p>
           <hr style="border: none; border-top: 1px dashed #000; margin: 4px 0;">
@@ -529,9 +643,7 @@
   </div>
 
   <script>
-    // -------------------------------------------------------------
     // FIREBASE CONFIGURATION
-    // -------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyDrwkztKSHmBuw2J5ygf4wQv4WxkCVJacY",
       authDomain: "kasir-jung-shop.firebaseapp.com",
@@ -544,7 +656,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-
+    
     db.ref('.info/connected').on('value', (snap) => {
       const statusEl = document.getElementById('cloud-status');
       if (snap.val() === true) {
@@ -561,17 +673,23 @@
     let transaksiList = [];
     let pengeluaranList = [];
     let keranjang = [];
+    let keranjangManual = [];
     let chartInstance = null;
     let chartTopProdukInstance = null;
     let tempFotoBase64 = '';
 
-    // Inisialisasi awal aplikasi
     window.onload = function() {
       listenToDatabase();
       generateAutoId();
+      setTodayDateTimeManual();
     };
 
-    /* REALTIME DATABASE LISTENER */
+    function setTodayDateTimeManual() {
+      const now = new Date();
+      now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+      document.getElementById('manual-waktu').value = now.toISOString().slice(0,16);
+    }
+
     function listenToDatabase() {
       db.ref('produk').on('value', (snapshot) => {
         const data = snapshot.val();
@@ -585,6 +703,7 @@
         transaksiList.sort((a,b) => new Date(b.waktuISO || b.waktu) - new Date(a.waktuISO || a.waktu));
         renderDashboardStats();
         renderLaporan();
+        renderKelolaTransaksi();
       });
 
       db.ref('pengeluaran').on('value', (snapshot) => {
@@ -611,12 +730,13 @@
       renderProdukKasir();
       renderTabelMasterProduk();
       cekNotifikasiStokKritis();
+      updateManualProdukDropdown();
     }
 
     function renderDashboardStats() {
       const todayISO = new Date().toISOString().split('T')[0];
       const trxHariIni = transaksiList.filter(t => t.tanggalISO === todayISO);
-
+      
       const omzetHari = trxHariIni.reduce((sum, t) => sum + t.total, 0);
       document.getElementById('dash-omzet-hari').innerText = omzetHari.toLocaleString();
       document.getElementById('dash-trx-hari').innerText = trxHariIni.length;
@@ -779,7 +899,7 @@
 
       const trxId = 'TRX-' + Date.now();
       const now = new Date();
-
+      
       const transaksi = {
         id: trxId,
         waktu: now.toLocaleString('id-ID'),
@@ -923,6 +1043,195 @@
       });
     }
 
+    /* KELOLA TRANSAKSI (TAMBAH / EDIT WAKTU / HAPUS) */
+    function updateManualProdukDropdown() {
+      const select = document.getElementById('manual-select-produk');
+      if (!select) return;
+      select.innerHTML = '';
+      produkList.forEach(p => {
+        select.innerHTML += `<option value="${p.id}">${p.nama} - Rp ${p.hargaJual.toLocaleString()} (Stok: ${p.stok})</option>`;
+      });
+    }
+
+    function tambahItemManual() {
+      const pId = document.getElementById('manual-select-produk').value;
+      const qty = parseInt(document.getElementById('manual-qty').value) || 1;
+      const prod = produkList.find(p => p.id === pId);
+
+      if (!prod) return alert('Pilih produk!');
+      if (qty > prod.stok) return alert('Stok produk tidak mencukupi!');
+
+      const exist = keranjangManual.find(k => k.id === pId);
+      if (exist) {
+        exist.qty += qty;
+      } else {
+        const hargaEfektif = prod.hargaJual - (prod.hargaJual * (prod.diskon / 100));
+        keranjangManual.push({
+          id: prod.id,
+          nama: prod.nama + (prod.tipe ? ` (${prod.tipe})` : ''),
+          hargaBeli: prod.hargaBeli,
+          hargaJual: prod.hargaJual,
+          diskonRp: prod.hargaJual * (prod.diskon / 100),
+          hargaEfektif: hargaEfektif,
+          qty: qty
+        });
+      }
+
+      renderTabelItemManual();
+    }
+
+    function renderTabelItemManual() {
+      const tbody = document.getElementById('manual-tabel-item');
+      tbody.innerHTML = '';
+      keranjangManual.forEach((item, index) => {
+        tbody.innerHTML += `
+          <tr>
+            <td>${item.nama}</td>
+            <td>${item.qty}</td>
+            <td>Rp ${item.hargaEfektif.toLocaleString()}</td>
+            <td>Rp ${(item.hargaEfektif * item.qty).toLocaleString()}</td>
+            <td><button class="btn btn-danger" style="padding: 2px 6px;" onclick="hapusItemManual(${index})">✕</button></td>
+          </tr>
+        `;
+      });
+    }
+
+    function hapusItemManual(index) {
+      keranjangManual.splice(index, 1);
+      renderTabelItemManual();
+    }
+
+    function simpanTransaksiManual() {
+      const customWaktu = document.getElementById('manual-waktu').value;
+      if (!customWaktu) return alert('Pilih tanggal dan waktu!');
+      if (keranjangManual.length === 0) return alert('Tambahkan minimal 1 produk!');
+
+      const dateObj = new Date(customWaktu);
+      const trxId = 'TRX-' + dateObj.getTime();
+      const metode = document.getElementById('manual-metode').value;
+
+      let subtotalOriginal = keranjangManual.reduce((sum, item) => sum + (item.hargaJual * item.qty), 0);
+      let totalHPP = keranjangManual.reduce((sum, item) => sum + (item.hargaBeli * item.qty), 0);
+      let totalAkhir = keranjangManual.reduce((sum, item) => sum + (item.hargaEfektif * item.qty), 0);
+      let diskonTotal = keranjangManual.reduce((sum, item) => sum + (item.diskonRp * item.qty), 0);
+
+      const bayar = parseFloat(document.getElementById('manual-bayar').value) || totalAkhir;
+
+      const transaksi = {
+        id: trxId,
+        waktu: dateObj.toLocaleString('id-ID'),
+        waktuISO: dateObj.toISOString(),
+        tanggalISO: dateObj.toISOString().split('T')[0],
+        items: keranjangManual,
+        subtotal: subtotalOriginal,
+        diskonTotal: diskonTotal,
+        total: totalAkhir,
+        hpp: totalHPP,
+        laba: totalAkhir - totalHPP,
+        bayar: bayar,
+        kembalian: Math.max(0, bayar - totalAkhir),
+        metode: metode
+      };
+
+      // Potong Stok
+      keranjangManual.forEach(item => {
+        const p = produkList.find(prod => prod.id === item.id);
+        if (p) db.ref('produk/' + p.id + '/stok').set(Math.max(0, p.stok - item.qty));
+      });
+
+      db.ref('transaksi/' + trxId).set(transaksi).then(() => {
+        alert('Transaksi manual berhasil ditambahkan!');
+        keranjangManual = [];
+        document.getElementById('manual-bayar').value = '';
+        renderTabelItemManual();
+      });
+    }
+
+    function renderKelolaTransaksi() {
+      const tbody = document.getElementById('tabel-kelola-transaksi');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      transaksiList.forEach(t => {
+        tbody.innerHTML += `
+          <tr>
+            <td><b>${t.id}</b></td>
+            <td>${t.waktu}</td>
+            <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:0.75rem;">${t.metode}</span></td>
+            <td><b>Rp ${t.total.toLocaleString()}</b></td>
+            <td style="color:var(--success); font-weight:bold;">Rp ${t.laba.toLocaleString()}</td>
+            <td>
+              <button class="btn btn-warning" style="padding:2px 6px;" onclick='bukaModalEditTrx(${JSON.stringify(t)})'>Edit</button>
+              <button class="btn btn-danger" style="padding:2px 6px;" onclick="hapusTransaksi('${t.id}')">Hapus</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function hapusTransaksi(id) {
+      const t = transaksiList.find(item => item.id === id);
+      if (!t) return;
+
+      if (confirm(`Hapus transaksi ${id}? Stok barang yang ada pada transaksi ini akan dikembalikan otomatis.`)) {
+        // Kembalikan Stok Produk
+        if (t.items && Array.isArray(t.items)) {
+          t.items.forEach(item => {
+            const p = produkList.find(prod => prod.id === item.id);
+            if (p) {
+              db.ref('produk/' + p.id + '/stok').set(p.stok + item.qty);
+            }
+          });
+        }
+        db.ref('transaksi/' + id).remove();
+      }
+    }
+
+    function bukaModalEditTrx(t) {
+      document.getElementById('edit-trx-id').value = t.id;
+      document.getElementById('edit-trx-metode').value = t.metode || 'Tunai';
+      document.getElementById('edit-trx-bayar').value = t.bayar || t.total;
+
+      if (t.waktuISO) {
+        const d = new Date(t.waktuISO);
+        d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+        document.getElementById('edit-trx-waktu').value = d.toISOString().slice(0,16);
+      }
+
+      document.getElementById('modal-edit-trx').classList.add('active');
+    }
+
+    function tutupModalEditTrx() {
+      document.getElementById('modal-edit-trx').classList.remove('active');
+    }
+
+    function simpanEditTransaksi() {
+      const id = document.getElementById('edit-trx-id').value;
+      const customWaktu = document.getElementById('edit-trx-waktu').value;
+      const metode = document.getElementById('edit-trx-metode').value;
+      const bayar = parseFloat(document.getElementById('edit-trx-bayar').value) || 0;
+
+      const t = transaksiList.find(item => item.id === id);
+      if (!t) return;
+
+      const dateObj = customWaktu ? new Date(customWaktu) : new Date(t.waktuISO || t.waktu);
+
+      const updatedData = {
+        ...t,
+        waktu: dateObj.toLocaleString('id-ID'),
+        waktuISO: dateObj.toISOString(),
+        tanggalISO: dateObj.toISOString().split('T')[0],
+        metode: metode,
+        bayar: bayar,
+        kembalian: Math.max(0, bayar - t.total)
+      };
+
+      db.ref('transaksi/' + id).update(updatedData).then(() => {
+        alert('Transaksi berhasil diubah!');
+        tutupModalEditTrx();
+      });
+    }
+
     /* PENGELUARAN & LAPORAN */
     function catatPengeluaran() {
       const ket = document.getElementById('exp-ket').value.trim();
@@ -987,7 +1296,7 @@
       document.getElementById('rep-omzet').innerText = omzet.toLocaleString();
       document.getElementById('rep-pengeluaran').innerText = totalPengeluaran.toLocaleString();
       document.getElementById('rep-laba').innerText = labaBersih.toLocaleString();
-
+      
       renderChart(list);
       renderTopProdukAndChart(list);
     }
@@ -1084,7 +1393,7 @@
     function tampilkanStruk(trx) {
       document.getElementById('struk-waktu').innerText = trx.waktu;
       document.getElementById('struk-id').innerText = 'ID: ' + trx.id;
-
+      
       const itemsContainer = document.getElementById('struk-items');
       itemsContainer.innerHTML = '';
       trx.items.forEach(item => {
