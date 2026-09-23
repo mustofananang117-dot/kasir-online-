@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>GyroPOS Pro - Aplikasi Kasir & Manajemen Toko Cloud</title>
-  
+  <title>JUNG SHOP - Aplikasi Kasir & Manajemen Toko Cloud</title>
+
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Firebase SDK -->
@@ -13,7 +13,7 @@
 
   <style>
     :root {
-      --primary: #10b981; /* Tema GyroPOS Emerald */
+      --primary: #10b981; /* Tema JUNG SHOP Emerald */
       --primary-dark: #059669;
       --secondary: #2563eb;
       --success: #10b981;
@@ -108,7 +108,7 @@
 
     .form-group { margin-bottom: 10px; text-align: left; }
     .form-group label { display: block; font-size: 0.78rem; font-weight: 600; margin-bottom: 4px; color: #475569; }
-    
+
     input, button, select, textarea {
       width: 100%;
       padding: 9px 12px;
@@ -163,7 +163,7 @@
     }
     .item-produk h4 { font-size: 0.82rem; margin-bottom: 2px; line-height: 1.2; height: 2rem; overflow: hidden; }
     .item-produk .price { font-size: 0.85rem; color: var(--primary-dark); font-weight: bold; }
-    
+
     .badge-stok { font-size: 0.68rem; padding: 2px 5px; border-radius: 4px; font-weight: 600; display: inline-block; }
     .stok-aman { background: #dcfce7; color: #166534; }
     .stok-kritis { background: #fef3c7; color: #92400e; }
@@ -197,7 +197,7 @@
 <body>
 
   <header class="no-print">
-    <span>GyroPOS <small style="font-size:0.65rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:8px;">PRO</small></span>
+    <span>JUNG SHOP <small style="font-size:0.65rem; background:rgba(255,255,255,0.2); padding:2px 6px; border-radius:8px;">PRO</small></span>
     <div class="header-user-info">
       <span class="status-badge" id="cloud-status">☁️ Online</span>
     </div>
@@ -310,7 +310,7 @@
     <div class="card">
       <h2 id="form-produk-title">Tambah / Edit Produk</h2>
       <input type="hidden" id="edit-produk-id">
-      
+
       <div class="grid-2">
         <div class="form-group">
           <label>ID / Kode Barang (Auto):</label>
@@ -501,7 +501,7 @@
     <div class="modal-content">
       <div id="area-struk" class="struk-box">
         <div class="struk-header">
-          <h3 style="font-size: 1.1rem; font-weight: bold;">GyroPOS - Toko Ku</h3>
+          <h3 style="font-size: 1.1rem; font-weight: bold;">JUNG SHOP - Toko Ku</h3>
           <p>Jl. Niaga Utama No. 12</p>
           <p>Telp/WA: 0812-3456-7890</p>
           <hr style="border: none; border-top: 1px dashed #000; margin: 4px 0;">
@@ -544,7 +544,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    
+
     db.ref('.info/connected').on('value', (snap) => {
       const statusEl = document.getElementById('cloud-status');
       if (snap.val() === true) {
@@ -616,7 +616,7 @@
     function renderDashboardStats() {
       const todayISO = new Date().toISOString().split('T')[0];
       const trxHariIni = transaksiList.filter(t => t.tanggalISO === todayISO);
-      
+
       const omzetHari = trxHariIni.reduce((sum, t) => sum + t.total, 0);
       document.getElementById('dash-omzet-hari').innerText = omzetHari.toLocaleString();
       document.getElementById('dash-trx-hari').innerText = trxHariIni.length;
@@ -779,7 +779,7 @@
 
       const trxId = 'TRX-' + Date.now();
       const now = new Date();
-      
+
       const transaksi = {
         id: trxId,
         waktu: now.toLocaleString('id-ID'),
@@ -987,7 +987,7 @@
       document.getElementById('rep-omzet').innerText = omzet.toLocaleString();
       document.getElementById('rep-pengeluaran').innerText = totalPengeluaran.toLocaleString();
       document.getElementById('rep-laba').innerText = labaBersih.toLocaleString();
-      
+
       renderChart(list);
       renderTopProdukAndChart(list);
     }
@@ -1084,7 +1084,7 @@
     function tampilkanStruk(trx) {
       document.getElementById('struk-waktu').innerText = trx.waktu;
       document.getElementById('struk-id').innerText = 'ID: ' + trx.id;
-      
+
       const itemsContainer = document.getElementById('struk-items');
       itemsContainer.innerHTML = '';
       trx.items.forEach(item => {
